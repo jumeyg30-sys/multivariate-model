@@ -1,3 +1,8 @@
+import streamlit as st
+
+st.title("🐦 Dashboard Avifauna & Variables Climáticas")
+
+
 import io
 import json
 import zipfile
