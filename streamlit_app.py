@@ -1,8 +1,4 @@
 import streamlit as st
-
-st.title("🐦 Dashboard Avifauna & Variables Climáticas")
-
-
 import io
 import json
 import zipfile
@@ -22,10 +18,6 @@ st.set_page_config(
     page_icon="🕊️",
     layout="wide",
 )
-
-st.title("🐦 Dashboard Avifauna & Variables Climáticas")
-st.caption("Explora avistamientos por especie y su relación con variables climáticas. Filtra, compara y prepara insumos para tu modelo predictivo.")
-st.info('Modelo multivariante para predecir abundancia y diversidad de aves según variables climáticas en el campus de la ESPOL ')
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
