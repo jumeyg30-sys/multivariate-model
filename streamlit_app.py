@@ -13,7 +13,6 @@ import plotly.graph_objects as go
 import streamlit as st
 from sklearn import metrics
 
-
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
     """Carga el conjunto de datos desde el archivo ZIP.
