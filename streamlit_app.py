@@ -144,21 +144,43 @@ def filter_by_species(df: pd.DataFrame, common_name: str) -> pd.DataFrame:
 
 
 def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
-    """Genera un boxplot de la variable seleccionada para la especie.
+----
+def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
+    """Genera un diagrama de cajas (boxplot) de una variable por mes.
+
+    Esta función permite visualizar la distribución de la variable
+    seleccionada (climática o ``LOG_AVISTAMIENTOS``) agrupada por
+    ``MONTH``. Se crea un boxplot por cada mes, mostrando los puntos
+    individuales para facilitar la exploración de la variabilidad.
 
     Args:
         df: DataFrame ya filtrado por especie.
-        variable: Nombre de la variable climática a visualizar.
+        variable: Nombre de la columna a graficar. Debe existir en ``df``.
 
-    Muestra el gráfico mediante Streamlit usando Plotly, que permite
-    interactividad de forma nativa en la aplicación.
+    Si la variable o la columna ``MONTH`` no existen en ``df``, se
+    mostrará un mensaje de advertencia.
     """
-    if variable not in df.columns:
-        st.warning(f"La variable {variable} no se encuentra en el conjunto de datos.")
+    if 'LOG_AVISTAMIENTOS' not in df.columns or 'MONTH' not in df.columns:
+        st.warning("No se encuentran las columnas LOG_AVISTAMIENTOS o MONTH en los datos.")
         return
-    fig = px.box(df, y=variable, points="all", title=f"Distribución de {variable}")
-    fig.update_layout(xaxis_visible=False, yaxis_title=variable)
-    st.plotly_chart(fig, use_container_width=True)
+
+    try:
+        # Crear el boxplot con Plotly, agrupando por mes
+        fig = px.box(
+            df,
+            x='MONTH',
+            y='LOG_AVISTAMIENTOS',
+            points="all",
+            title=f"Distribución mensual de avistamientos por mes"
+        )
+        fig.update_layout(
+            xaxis_title="Mes",
+            yaxis_title='Log10(Avistamientos + 1)'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    except Exception:
+        st.warning("No se pudo generar el diagrama de cajas debido a un error con los datos.")
+        ---
 
 
 def plot_variable_importance(model, feature_names: List[str]) -> None:
