@@ -143,8 +143,7 @@ def filter_by_species(df: pd.DataFrame, common_name: str) -> pd.DataFrame:
     return df[df['COMMON NAME'] == common_name].copy()
 
 
-def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
-----
+
 def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
     """Genera un diagrama de cajas (boxplot) de una variable por mes.
 
