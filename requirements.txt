@@ -1,1 +1,9 @@
+plotly
 streamlit>=1.26.0
+numpy
+pandas 
+seaborn
+matplotlib
+datetime
+seaborn 
+scikit-learn
