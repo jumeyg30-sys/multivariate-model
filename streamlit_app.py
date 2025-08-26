@@ -179,8 +179,7 @@ def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
         st.plotly_chart(fig, use_container_width=True)
     except Exception:
         st.warning("No se pudo generar el diagrama de cajas debido a un error con los datos.")
-        ---
-
+        
 
 def plot_variable_importance(model, feature_names: List[str]) -> None:
     """Grafica la importancia de las variables de un modelo logístico.
