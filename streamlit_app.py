@@ -58,7 +58,6 @@ def load_dataset(zip_path: Path) -> pd.DataFrame:
 
     return df
 
-
 @st.cache_data(show_spinner=True)
 def load_models(model_paths: Dict[str, Path]) -> Dict[str, object]:
     """Carga los modelos de regresión logística desde archivos pickle.
@@ -265,6 +264,16 @@ def main() -> None:
     if df.empty:
         st.stop()
 
+    # Crear la variable binaria de presencia (1 si hay avistamientos, 0 en caso contrario)
+    # Esto se hace una sola vez al inicio para que esté disponible en todas las secciones
+    if 'AVISTAMIENTOS' in df.columns and 'PRESENCIA' not in df.columns:
+        try:
+            df['PRESENCIA'] = (df['AVISTAMIENTOS'] > 0).astype(int)
+        except Exception:
+            st.warning("No se pudo crear la variable PRESENCIA debido a un error en los datos.")
+    elif 'AVISTAMIENTOS' not in df.columns:
+        st.warning("No se encuentra la columna AVISTAMIENTOS en los datos. La variable PRESENCIA no se puede crear.")
+    
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
 
