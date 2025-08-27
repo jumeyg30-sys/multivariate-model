@@ -134,7 +134,24 @@ def filter_by_species(df: pd.DataFrame, common_name: str) -> pd.DataFrame:
     """
     return df[df['COMMON NAME'] == common_name].copy()
 
+def plot_top_n_birds(df: pd.DataFrame, n: int) -> None:
+    """Muestra un gráfico con las N especies más avistadas.
 
+    Args:
+        df: Conjunto de datos completo.
+        n: Número de especies a mostrar.
+
+    Ordena las especies por su total de avistamientos y grafica las primeras
+    ``n``. Se utilizan los campos ``COMMON NAME`` y ``AVISTAMIENTOS``.
+    """
+    if 'AVISTAMIENTOS' not in df.columns:
+        st.warning("No se encuentra la columna AVISTAMIENTOS en los datos.")
+        return
+    agg_df = df.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().sort_values(ascending=False).head(n).reset_index()
+    fig = px.bar(agg_df, x='AVISTAMIENTOS', y='COMMON NAME', orientation='h',
+                 title=f"Top {n} especies por número de avistamientos")
+    fig.update_layout(xaxis_title="Total de avistamientos", yaxis_title="Especie")
+    st.plotly_chart(fig, use_container_width=True)
 
 def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
     """Genera un diagrama de cajas (boxplot) de una variable por mes.
@@ -237,27 +254,6 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
                       xaxis_title="Fecha",
                       yaxis_title="Valor")
     st.plotly_chart(fig, use_container_width=True)
-
-
-def plot_top_n_birds(df: pd.DataFrame, n: int) -> None:
-    """Muestra un gráfico con las N especies más avistadas.
-
-    Args:
-        df: Conjunto de datos completo.
-        n: Número de especies a mostrar.
-
-    Ordena las especies por su total de avistamientos y grafica las primeras
-    ``n``. Se utilizan los campos ``COMMON NAME`` y ``AVISTAMIENTOS``.
-    """
-    if 'AVISTAMIENTOS' not in df.columns:
-        st.warning("No se encuentra la columna AVISTAMIENTOS en los datos.")
-        return
-    agg_df = df.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().sort_values(ascending=False).head(n).reset_index()
-    fig = px.bar(agg_df, x='AVISTAMIENTOS', y='COMMON NAME', orientation='h',
-                 title=f"Top {n} especies por número de avistamientos")
-    fig.update_layout(xaxis_title="Total de avistamientos", yaxis_title="Especie")
-    st.plotly_chart(fig, use_container_width=True)
-
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
