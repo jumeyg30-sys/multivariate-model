@@ -320,7 +320,7 @@ def main() -> None:
     models = load_models(model_paths)
     # Modelo logístico general para presencia/ausencia
     logistic_model_path = Path('model_logistic.pkl')
-    logistic_model = load_logistic_model(logistic_model_pat)
+    logistic_model = load_logistic_model(logistic_model_path)
 
     # Contenido principal
     st.subheader(f"Especie seleccionada: {selected_common_name}")
