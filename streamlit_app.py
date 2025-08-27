@@ -317,6 +317,7 @@ def main() -> None:
         'Especie 2': Path('model_especie2.pkl'),
         'Especie 3': Path('model_especie3.pkl')
     }
+    
     models = load_models(model_paths)
     # Modelo logístico general para presencia/ausencia
     logistic_model_path = Path('model_logistic.pkl')
