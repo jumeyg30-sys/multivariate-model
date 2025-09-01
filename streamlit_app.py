@@ -291,15 +291,17 @@ def main() -> None:
     ].iloc[0]
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
 
-    
-    # Mostrar la tarjeta con el total de aves, manteniendo el mismo formato
-    kpi_html = f"""
-    <div style="background-color:#4CAF50; padding: 10px 20px; border-radius: 8px; color:white; text-align:center; width: 180px; margin:auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <h4 style="margin:0; font-size: 18px;">Total de Aves ({selected_common_name})</h4>
-        <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
-    </div>
-    """
-    st.markdown(kpi_html, unsafe_allow_html=True)
+     # Filtrar el DataFrame para la especie seleccionada
+        aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)    
+        
+        # Mostrar la tarjeta con el total de aves, manteniendo el mismo formato
+        kpi_html = f"""
+        <div style="background-color:#4CAF50; padding: 10px 20px; border-radius: 8px; color:white; text-align:center; width: 180px; margin:auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <h4 style="margin:0; font-size: 18px;">Total de Aves ({selected_common_name})</h4>
+            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
 
     
     
