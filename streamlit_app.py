@@ -313,8 +313,8 @@ def main() -> None:
         st.markdown(kpi_html, unsafe_allow_html=True)
 
      with col4:
-         endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICA']
-         endemica_texto = endemica.apply(lambda x: 'ES ENDÉMICA' if x else 'NO ES ENDÉMICA')
+        endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICA']
+        endemica_texto = endemica.apply(lambda x: 'ES ENDÉMICA' if x else 'NO ES ENDÉMICA')
         
         kpi_html = f"""
         <div style="background-color:#FFD700::; padding: 10px 10px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
