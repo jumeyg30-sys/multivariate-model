@@ -258,22 +258,6 @@ def main() -> None:
     df = load_dataset(data_path)
     if df.empty:
         st.stop()
-
-    st.markdown("🐦 ESTADÍSTICA DE AVES")
-    col1,col2,col3,col4 = st.columns(4)
-
-    with col1:
-        aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
-
-        # Personalizar KPI con HTML y CSS
-        kpi_html = f"""
-        <div style="background-color:#4CAF50; padding: 10px 10px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <h4 style="margin:0; font-size: 25px;">🦜 Total de Aves</h4>  <!-- Aquí se ajusta el tamaño de la fuente -->
-            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>  <!-- Aquí se ajusta el tamaño de la fuente -->
-        </div>
-        """
-        st.markdown(kpi_html, unsafe_allow_html=True)
-
     
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
@@ -291,19 +275,34 @@ def main() -> None:
     ].iloc[0]
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
 
-     # Filtrar el DataFrame para la especie seleccionada
+    st.markdown("🐦 ESTADÍSTICA DE AVES")
+    col1,col2,col3,col4 = st.columns(4)
+
+    with col1:
+        aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
+
+        # Personalizar KPI con HTML y CSS
+        kpi_html = f"""
+        <div style="background-color:#4CAF50; padding: 10px 10px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h4 style="margin:0; font-size: 25px;">🦜 Total de Aves</h4>  <!-- Aquí se ajusta el tamaño de la fuente -->
+            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>  <!-- Aquí se ajusta el tamaño de la fuente -->
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
+
+    with col2:
+        Filtrar el DataFrame para la especie seleccionada
         aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)    
-        
-        # Mostrar la tarjeta con el total de aves, manteniendo el mismo formato
+            
+        Mostrar la tarjeta con el total de aves, manteniendo el mismo formato
         kpi_html = f"""
         <div style="background-color:#4CAF50; padding: 10px 20px; border-radius: 8px; color:white; text-align:center; width: 180px; margin:auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <h4 style="margin:0; font-size: 18px;">Total de Aves ({selected_common_name})</h4>
+            <h4 style="margin:0; font-size: 18px;">🦜 Total de ({selected_common_name})</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
 
-    
     
     # Filtrar datos por especie
     species_df = filter_by_species(df, selected_common_name)
