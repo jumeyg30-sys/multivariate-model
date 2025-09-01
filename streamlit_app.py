@@ -262,7 +262,7 @@ def main() -> None:
     st.markdown("Datos Relevantes")
     col1,col2,col3,col4 = st.columns(4)
 
-    with col 1:
+    with col1:
         aves_totales= df['ALL SPECIES REPORTED'].sum().astype(int)
         st.metric(label="Total De Aves", value=aves_totales)
     
