@@ -276,60 +276,60 @@ def main() -> None:
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
     st.markdown("🐦 ESTADÍSTICA DE AVES")
 col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
     
-    # Personalizar KPI con HTML y CSS
-    kpi_html = f"""
-    <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
-                justify-content: center; align-items: center;">
-        <h4 style="margin:0; font-size: 22px;">🦜 Total de Aves</h4>
-        <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
-    </div>
-    """
-    st.markdown(kpi_html, unsafe_allow_html=True)
-
-with col2:
-    aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
+    with col1:
+        aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
+        
+        # Personalizar KPI con HTML y CSS
+        kpi_html = f"""
+        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    justify-content: center; align-items: center;">
+            <h4 style="margin:0; font-size: 22px;">🦜 Total de Aves</h4>
+            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
     
-    kpi_html = f"""
-    <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
-                justify-content: center; align-items: center;">
-        <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
-        <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
-    </div>
-    """
-    st.markdown(kpi_html, unsafe_allow_html=True)
-
-with col3:
-    Peligro = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
+    with col2:
+        aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
+        
+        kpi_html = f"""
+        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    justify-content: center; align-items: center;">
+            <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
+            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
     
-    kpi_html = f"""
-    <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
-                justify-content: center; align-items: center;">
-        <h4 style="margin:0; font-size:22px;">Categoría UICN</h4>
-        <h3 style="margin:5px 0; font-size: 24px;">{Peligro.iloc[0]}</h3>
-    </div>
-    """
-    st.markdown(kpi_html, unsafe_allow_html=True)
-
-with col4:
-    endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
-    endemica_texto = endemica.apply(lambda x: 'ES ENDÉMICA' if x else 'NO ES ENDÉMICA')
+    with col3:
+        Peligro = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
+        
+        kpi_html = f"""
+        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    justify-content: center; align-items: center;">
+            <h4 style="margin:0; font-size:22px;">Categoría UICN</h4>
+            <h3 style="margin:5px 0; font-size: 24px;">{Peligro.iloc[0]}</h3>
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
     
-    kpi_html = f"""
-    <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
-                justify-content: center; align-items: center;">
-        <h4 style="margin:0; font-size:22px;">Distribución Geográfica</h4>
-        <h3 style="margin:5px 0; font-size: 24px;">{endemica_texto.iloc[0]}</h3>
-    </div>
-    """
-    st.markdown(kpi_html, unsafe_allow_html=True)
+    with col4:
+        endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
+        endemica_texto = endemica.apply(lambda x: 'ES ENDÉMICA' if x else 'NO ES ENDÉMICA')
+        
+        kpi_html = f"""
+        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    justify-content: center; align-items: center;">
+            <h4 style="margin:0; font-size:22px;">Distribución Geográfica</h4>
+            <h3 style="margin:5px 0; font-size: 24px;">{endemica_texto.iloc[0]}</h3>
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
 
 
     # Filtrar datos por especie
