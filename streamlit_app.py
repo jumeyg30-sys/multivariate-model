@@ -262,7 +262,7 @@ def main() -> None:
     st.markdown("🐦 ESTADÍSTICA DE AVES")
     col1,col2,col3,col4 = st.columns(4)
 
-     with col1:
+    with col1:
         aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
 
         # Personalizar KPI con HTML y CSS
