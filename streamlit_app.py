@@ -259,13 +259,21 @@ def main() -> None:
     if df.empty:
         st.stop()
 
-    st.markdown("Datos Relevantes")
+    st.markdown("🐦 ESTADÍSTICA DE AVES")
     col1,col2,col3,col4 = st.columns(4)
 
-    with col1:
-        aves_totales= df['ALL SPECIES REPORTED'].sum().astype(int)
-        st.metric(label="Total De Aves", value=aves_totales)
-    
+     with col1:
+        aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
+
+        # Personalizar KPI con HTML y CSS
+        kpi_html = f"""
+        <div style="background-color:#4CAF50; padding: 20px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h3 style="margin:0;">🦜 Total de Aves</h3>
+            <h2 style="margin:10px 0;">{aves_totales}</h2>
+        </div>
+        """
+        st.markdown(kpi_html, unsafe_allow_html=True)
+
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
 
