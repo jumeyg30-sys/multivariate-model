@@ -275,7 +275,7 @@ def main() -> None:
     ].iloc[0]
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
     st.markdown("🐦 ESTADÍSTICA DE AVES")
-col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
@@ -293,7 +293,7 @@ col1, col2, col3, col4 = st.columns(4)
     
     with col2:
         aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
-        
+    
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
