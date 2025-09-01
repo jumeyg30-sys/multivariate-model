@@ -283,7 +283,7 @@ def main() -> None:
 
         # Personalizar KPI con HTML y CSS
         kpi_html = f"""
-        <div style="background-color:#FF5733:; padding: 10px 10px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <div style="background-color:#FFD700::; padding: 10px 10px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <h4 style="margin:0; font-size: 25px;">🦜 Total de Aves</h4>  <!-- Aquí se ajusta el tamaño de la fuente -->
             <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>  <!-- Aquí se ajusta el tamaño de la fuente -->
         </div>
@@ -294,8 +294,8 @@ def main() -> None:
         aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)  
         
         kpi_html = f"""
-        <div style="background-color:#FF5733:; padding: 10px 00px; border-radius: 10px; color:white; text-align:center; width: 180px; margin:auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <h4 style="margin:0; font-size: 18px;">🦜 Total de {selected_common_name}</h4>
+        <div style="background-color:#FFD700::; padding: 10px 10px; border-radius: 10px; color:white; text-align:center; width: 180px; margin:auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <h4 style="margin:0; font-size:258px;">🦜 Total de {selected_common_name}</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
         </div>
         """
