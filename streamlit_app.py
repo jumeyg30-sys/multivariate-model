@@ -251,14 +251,21 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
-    st.markdown('<h1 class ="main-header"> Dashboard Interactivo de Avistamientos de Aves en el Campus ESPOL.🐢</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>', unsafe_allow_html=True)
     
     # Carga del dataset
     data_path = Path('output.zip')
     df = load_dataset(data_path)
     if df.empty:
         st.stop()
-   
+
+    st.markdown("Datos Relevantes")
+    col1,col2,col3,col4 = st.columns(4)
+
+    with col 1:
+        aves_totales= df['ALL SPECIES REPORTED'].sum().astype(int)
+        st.metric(label="Total De Aves", value=aves_totales)
+    
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
 
@@ -342,6 +349,7 @@ def main() -> None:
         except Exception:
             logistic_feature_names = available_vars
 
+        
         # Importancia de variables (coeficientes) usando las variables del modelo
         plot_variable_importance(logistic_model, logistic_feature_names)
         # Métricas para la especie seleccionada: se debe haber creado la columna PRESENCIA
