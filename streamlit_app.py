@@ -291,10 +291,8 @@ def main() -> None:
         st.markdown(kpi_html, unsafe_allow_html=True)
 
     with col2:
-        Filtrar el DataFrame para la especie seleccionada
-        aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)    
-            
-        Mostrar la tarjeta con el total de aves, manteniendo el mismo formato
+        aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)  
+        
         kpi_html = f"""
         <div style="background-color:#4CAF50; padding: 10px 20px; border-radius: 8px; color:white; text-align:center; width: 180px; margin:auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <h4 style="margin:0; font-size: 18px;">🦜 Total de ({selected_common_name})</h4>
@@ -303,7 +301,6 @@ def main() -> None:
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
 
-    
     # Filtrar datos por especie
     species_df = filter_by_species(df, selected_common_name)
 
