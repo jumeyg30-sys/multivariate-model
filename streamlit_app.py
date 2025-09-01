@@ -13,11 +13,6 @@ import plotly.graph_objects as go
 import streamlit as st
 from sklearn import metrics
 
-st.set_page_config(
-    page_title="Avifauna & Clima — Dashboard",
-    page_icon="🕊️",
-    layout="wide",
-)
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
@@ -256,8 +251,8 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
-    st.title("Dashboard interactivo de avistamientos de aves")
-
+    st.markdown('<h1 class ="main-header"> Dashboard Interactivo de Avistamientos de Aves en el Campus ESPOL.🐢</h1>', unsafe_allow_html=True)
+    
     # Carga del dataset
     data_path = Path('output.zip')
     df = load_dataset(data_path)
