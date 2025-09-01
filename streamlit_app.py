@@ -267,7 +267,7 @@ def main() -> None:
 
         # Personalizar KPI con HTML y CSS
         kpi_html = f"""
-        <div style="background-color:#4CAF50; padding: 10px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <div style="background-color:#4CAF50; padding: 10px 15px; border-radius: 10px; color:white; text-align:center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <h3 style="margin:0;">🦜 Total de Aves</h3
             <h2 style="margin:10px 0;">{aves_totales}</h2>
         </div>
