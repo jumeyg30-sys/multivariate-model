@@ -412,9 +412,8 @@ def main() -> None:
         except Exception:
             logistic_feature_names = available_vars
 
-        
         # Importancia de variables (coeficientes) usando las variables del modelo
-        plot_variable_importance(logistic_model, logistic_feature_names)
+        def plot_variable_importance(logistic_model, logistic_feature_names)
         # Métricas para la especie seleccionada: se debe haber creado la columna PRESENCIA
         if 'PRESENCIA' in df.columns:
             try:
@@ -473,7 +472,6 @@ def main() -> None:
             
     st.markdown("---")
     st.caption("Aplicación desarrollada para visualizar avistamientos y variables climáticas de aves.")
-
 
 if __name__ == '__main__':
     main()
