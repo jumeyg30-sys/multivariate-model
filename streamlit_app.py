@@ -272,7 +272,7 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
 
-    
+
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
     st.markdown('<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>', unsafe_allow_html=True)
@@ -452,7 +452,10 @@ def main() -> None:
             st.info("No se ha podido calcular la métrica porque la variable 'PRESENCIA' no está disponible.")
     else:
         st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
-    
+
+    st.write("Dimensiones de X_spec:", X_spec.shape)
+    st.write("Dimensiones de y_spec:", y_spec.shape)
+
     st.info("""
     **Instrucciones para leer el gráfico:**
     - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
@@ -462,7 +465,7 @@ def main() -> None:
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
     plot_time_series(df, selected_vars_time_siglas)
-    
+
     # Top N especies más avistadas
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
     plot_top_n_birds(df, n_top)
