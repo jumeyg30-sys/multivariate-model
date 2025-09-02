@@ -381,7 +381,6 @@ def main() -> None:
 
     # Variables climáticas candidatas (siglas)
     climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
-)
 
     # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
     selected_vars_time = st.sidebar.multiselect(
