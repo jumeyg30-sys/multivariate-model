@@ -410,6 +410,7 @@ def main() -> None:
 
     # Contenido principal
     st.subheader(f"Especie seleccionada: {selected_common_name}")
+    
     # Resultados del modelo logístico para la especie seleccionada
     st.markdown("### Modelo logístico general (importancia de variables y métricas)")
     if logistic_model is not None:
@@ -432,6 +433,11 @@ def main() -> None:
         
         # Importancia de variables (coeficientes) usando las variables del modelo
         plot_variable_importance(logistic_model, logistic_feature_names)
+        
+                # Crear la columna 'PRESENCIA' a partir de 'avistamientos'
+        # Si hay al menos un avistamiento, PRESENCIA será 1 (especie presente), de lo contrario 0 (especie ausente)
+        df['PRESENCIA'] = df['avistamientos'].apply(lambda x: 1 if x > 0 else 0)
+
         # Métricas para la especie seleccionada: se debe haber creado la columna PRESENCIA
         if 'PRESENCIA' in df.columns:
             try:
