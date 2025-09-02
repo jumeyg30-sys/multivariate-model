@@ -215,6 +215,7 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
                  color_continuous_scale='RdBu', title="Importancia de variables")
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
+
 import pandas as pd
 import plotly.graph_objects as go
 import scipy.stats as stats
@@ -222,64 +223,66 @@ import streamlit as st
 from typing import List
 
 def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
-    """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia."""
+    """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
+    Args:
+        df: DataFrame filtrado por especie.
+        variables: Lista de variables climáticas a mostrar.
+
+    Se agrupan los datos por ``YEAR`` y se calcula la media de cada
+    variable. Cada variable se grafica en la misma figura para facilitar la
+    comparación temporal, y se añade una línea de tendencia.
+    """
     if not variables:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
+    # Asegurarse de que la columna 'YEAR' sea de tipo int
+    if df['YEAR'].dtype != 'int':
+        try:
+            df['YEAR'] = df['YEAR'].astype(int)
+        except Exception:
+            st.warning("No se pudo convertir la columna 'YEAR' a tipo entero.")
+            return
+
     # Agrupar los datos por YEAR y calcular la media de cada variable
     grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
-    if grouped.empty:
-        st.warning("No hay datos para las variables seleccionadas.")
+    # Verificar si el DataFrame tiene suficientes datos
+    if grouped.shape[0] < 2:
+        st.warning("No hay suficientes datos para calcular la línea de tendencia.")
         return
 
     fig = go.Figure()
 
+    # Graficar las variables y sus líneas de tendencia
     for var in variables:
-        if var not in grouped.columns:
-            st.warning(f"La variable '{var}' no se encuentra en los datos.")
-            continue
-
-        x = grouped['YEAR']
+        # Obtener los datos de la variable
+        x = grouped['YEAR']  # Usar directamente el año como variable independiente
         y = grouped[var]
-
-        # Eliminar valores NaN antes de la regresión
-        mask = x.notna() & y.notna()
-        x_clean = x[mask]
-        y_clean = y[mask]
-
-        if len(x_clean) < 2:
-            st.warning(f"No hay suficientes datos para calcular la línea de tendencia de '{var}'.")
-            # Solo graficamos la serie de tiempo
-            fig.add_trace(go.Scatter(x=x, y=y, mode='lines+markers', name=f"{var} - Serie de Tiempo"))
-            continue
-
-        # Calcular la línea de tendencia
-        slope, intercept, _, _, _ = stats.linregress(x_clean, y_clean)
-        trendline = slope * x_clean + intercept
+        
+        # Calcular la línea de tendencia utilizando regresión lineal
+        slope, intercept, _, _, _ = stats.linregress(x, y)
+        trendline = slope * x + intercept
 
         # Graficar la serie de tiempo
-        fig.add_trace(go.Scatter(x=x, y=y,
-                                 mode='lines+markers',
-                                 name=f"{var} - Serie de Tiempo"))
+        fig.add_trace(go.Scatter(x=grouped['YEAR'], y=grouped[var],
+                                 mode='lines', name=f"{var} - Serie de Tiempo"))
 
         # Graficar la línea de tendencia
-        fig.add_trace(go.Scatter(x=x_clean, y=trendline,
-                                 mode='lines',
-                                 name=f"{var} - Tendencia",
-                                 line=dict(dash='dash', width=2)))
+        fig.add_trace(go.Scatter(x=grouped['YEAR'], y=trendline,
+                                 mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
 
-    fig.update_layout(
-        title="Series de tiempo de variables climáticas con líneas de tendencia",
-        xaxis_title="Año",
-        yaxis_title="Valor",
-        template="plotly_dark",
-        xaxis=dict(dtick=1)
-    )
-
+    # Ajustar el diseño del gráfico
+    fig.update_layout(title="Series de tiempo de variables climáticas con líneas de tendencia",
+                      xaxis_title="Año",
+                      yaxis_title="Valor",
+                      template="plotly_dark")
+    
+    # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
+
+
 
 
 def main() -> None:
