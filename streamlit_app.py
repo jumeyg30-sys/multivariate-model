@@ -237,6 +237,10 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
+    # Inspeccionar los primeros valores de 'YEAR_MONTH'
+    st.write("Primeros registros de 'YEAR_MONTH':")
+    st.write(df['YEAR_MONTH'].head())
+
     # Asegurarse de que 'YEAR_MONTH' sea de tipo datetime y extraer el año
     if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
         try:
@@ -249,7 +253,12 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     # Verificar si hay valores nulos en la columna 'YEAR' después de la conversión
     if df['YEAR'].isnull().any():
         st.warning("Algunos valores en 'YEAR' no pudieron ser extraídos y han sido descartados.")
+        st.write(f"Cantidad de valores nulos en 'YEAR': {df['YEAR'].isnull().sum()}")
         df = df.dropna(subset=['YEAR'])
+
+    # Verificar los valores únicos en 'YEAR' después de la conversión
+    st.write("Valores únicos en la columna 'YEAR':")
+    st.write(df['YEAR'].unique())
 
     # Asegurarse de que la columna 'YEAR' sea de tipo entero
     if df['YEAR'].dtype != 'int':
@@ -258,14 +267,14 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     # Agrupar los datos por 'YEAR' y calcular la media de cada variable
     grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
-    # Imprimir el DataFrame agrupado para revisar si los datos son correctos
-    st.write("Datos agrupados por año:")
-    st.write(grouped)
-
     # Verificar si el DataFrame tiene suficientes datos para realizar la regresión
     if grouped.shape[0] < 2:
         st.warning(f"No hay suficientes datos para calcular la línea de tendencia. Solo hay {grouped.shape[0]} año(s) con datos.")
         return
+
+    # Ver el DataFrame agrupado
+    st.write("Datos agrupados por año:")
+    st.write(grouped)
 
     fig = go.Figure()
 
