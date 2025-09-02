@@ -216,39 +216,6 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
 
-
-def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
-    """Grafica series de tiempo para las variables seleccionadas.
-
-    Args:
-        df: DataFrame filtrado por especie.
-        variables: Lista de variables climáticas a mostrar.
-
-    Se agrupan los datos por ``YEAR_MONTH`` y se calcula la media de cada
-    variable. Cada variable se grafica en la misma figura para facilitar la
-    comparación temporal.
-    """
-    if not variables:
-        st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
-        return
-
-    # Asegurarse de que ``YEAR_MONTH`` sea de tipo datetime
-    if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
-        try:
-            df['YEAR_MONTH'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce')
-        except Exception:
-            st.warning("No se pudo convertir YEAR_MONTH a formato fecha.")
-
-    grouped = df.groupby('YEAR_MONTH')[variables].mean().reset_index()
-    fig = go.Figure()
-    for var in variables:
-        fig.add_trace(go.Scatter(x=grouped['YEAR_MONTH'], y=grouped[var],
-                                 mode='lines', name=var))
-    fig.update_layout(title="Series de tiempo de variables climáticas",
-                      xaxis_title="Fecha",
-                      yaxis_title="Valor")
-    st.plotly_chart(fig, use_container_width=True)
-
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
     st.markdown('<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>', unsafe_allow_html=True)
@@ -264,6 +231,60 @@ def main() -> None:
 
     # Sidebar para seleccionar especie y variables
     st.sidebar.header("Filtros")
+def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
+    """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
+
+    Args:
+        df: DataFrame filtrado por especie.
+        variables: Lista de variables climáticas a mostrar.
+
+    Se agrupan los datos por ``YEAR_MONTH`` y se calcula la media de cada
+    variable. Cada variable se grafica en la misma figura para facilitar la
+    comparación temporal, y se añade una línea de tendencia.
+    """
+    if not variables:
+        st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
+        return
+
+    # Asegurarse de que ``YEAR_MONTH`` sea de tipo datetime
+    if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
+        try:
+            df['YEAR_MONTH'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce')
+        except Exception:
+            st.warning("No se pudo convertir YEAR_MONTH a formato fecha.")
+
+    # Agrupar los datos por YEAR_MONTH y calcular la media de cada variable
+    grouped = df.groupby('YEAR_MONTH')[variables].mean().reset_index()
+    
+    fig = go.Figure()
+
+    # Graficar las variables y sus líneas de tendencia
+    for var in variables:
+        # Obtener los datos de la variable
+        x = grouped['YEAR_MONTH'].astype(int) / 10**9  # Convertir a segundos para el ajuste de regresión
+        y = grouped[var]
+        
+        # Calcular la línea de tendencia utilizando regresión lineal
+        slope, intercept, _, _, _ = stats.linregress(x, y)
+        trendline = slope * x + intercept
+
+        # Graficar la serie de tiempo
+        fig.add_trace(go.Scatter(x=grouped['YEAR_MONTH'], y=grouped[var],
+                                 mode='lines', name=f"{var} - Serie de Tiempo"))
+
+        # Graficar la línea de tendencia
+        fig.add_trace(go.Scatter(x=grouped['YEAR_MONTH'], y=trendline,
+                                 mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
+
+    # Ajustar el diseño del gráfico
+    fig.update_layout(title="Series de tiempo de variables climáticas con líneas de tendencia",
+                      xaxis_title="Fecha",
+                      yaxis_title="Valor",
+                      template="plotly_dark")
+    
+    # Mostrar el gráfico
+    st.plotly_chart(fig, use_container_width=True)
+
     selected_common_name = st.sidebar.selectbox(
         "Seleccione el nombre común de la especie:",
         options=species_mapping['COMMON NAME'],
@@ -274,7 +295,7 @@ def main() -> None:
         species_mapping['COMMON NAME'] == selected_common_name, 'SCIENTIFIC NAME'
     ].iloc[0]
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
-    st.markdown("🐦 ESTADÍSTICA DE AVES")
+
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -282,7 +303,7 @@ def main() -> None:
         
         # Personalizar KPI con HTML y CSS
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#FF5733; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size: 22px;">🦜 Total de Aves</h4>
@@ -295,7 +316,7 @@ def main() -> None:
         aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
     
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#FF5733; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
@@ -308,7 +329,7 @@ def main() -> None:
         Peligro = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
         
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#FF5733; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">Categoría UICN</h4>
@@ -322,7 +343,7 @@ def main() -> None:
         endemica_texto = endemica.apply(lambda x: 'ES ENDÉMICA' if x else 'NO ES ENDÉMICA')
         
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#FF5733; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">Distribución Geográfica</h4>
@@ -331,6 +352,7 @@ def main() -> None:
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
 
+    st.sidebar.markdown("---")
 
     # Filtrar datos por especie
     species_df = filter_by_species(df, selected_common_name)
