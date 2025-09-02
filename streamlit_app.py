@@ -215,85 +215,71 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
                  color_continuous_scale='RdBu', title="Importancia de variables")
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
-
 import pandas as pd
 import plotly.graph_objects as go
 import scipy.stats as stats
 import streamlit as st
 from typing import List
 
-def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
+def plot_time_series(df: pd.DataFrame, variables: List[str], species_df: pd.DataFrame) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
     Args:
-        df: DataFrame filtrado por especie.
+        df: DataFrame de avistamientos de aves.
         variables: Lista de variables climáticas a mostrar.
+        species_df: DataFrame de datos climáticos completos, sin filtrar por especie.
 
     Se agrupan los datos por ``YEAR`` y se calcula la media de cada
-    variable. Cada variable se grafica en la misma figura para facilitar la
+    variable climática. Cada variable se grafica en la misma figura para facilitar la
     comparación temporal, y se añade una línea de tendencia.
     """
     if not variables:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Inspeccionar los primeros valores de 'YEAR_MONTH'
-    st.write("Primeros registros de 'YEAR_MONTH':")
-    st.write(df['YEAR_MONTH'].head())
-
-    # Asegurarse de que 'YEAR_MONTH' sea de tipo datetime y extraer el año
-    if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
+    # Asegurarse de que 'YEAR_MONTH' en species_df sea de tipo datetime y extraer el año
+    if species_df['YEAR_MONTH'].dtype != 'datetime64[ns]':
         try:
-            # Convertir YEAR_MONTH a formato datetime (solo extraemos el año)
-            df['YEAR'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce').dt.year
+            species_df['YEAR'] = pd.to_datetime(species_df['YEAR_MONTH'], errors='coerce').dt.year
         except Exception:
             st.warning("No se pudo convertir 'YEAR_MONTH' a formato fecha.")
             return
 
     # Verificar si hay valores nulos en la columna 'YEAR' después de la conversión
-    if df['YEAR'].isnull().any():
+    if species_df['YEAR'].isnull().any():
         st.warning("Algunos valores en 'YEAR' no pudieron ser extraídos y han sido descartados.")
-        st.write(f"Cantidad de valores nulos en 'YEAR': {df['YEAR'].isnull().sum()}")
-        df = df.dropna(subset=['YEAR'])
-
-    # Verificar los valores únicos en 'YEAR' después de la conversión
-    st.write("Valores únicos en la columna 'YEAR':")
-    st.write(df['YEAR'].unique())
+        species_df = species_df.dropna(subset=['YEAR'])
 
     # Asegurarse de que la columna 'YEAR' sea de tipo entero
-    if df['YEAR'].dtype != 'int':
-        df['YEAR'] = df['YEAR'].astype(int)
+    if species_df['YEAR'].dtype != 'int':
+        species_df['YEAR'] = species_df['YEAR'].astype(int)
 
-    # Agrupar los datos por 'YEAR' y calcular la media de cada variable
-    grouped = df.groupby('YEAR')[variables].mean().reset_index()
+    # Agrupar los datos climáticos por 'YEAR' y calcular la media de cada variable
+    grouped_climate = species_df.groupby('YEAR')[variables].mean().reset_index()
 
-    # Verificar si el DataFrame tiene suficientes datos para realizar la regresión
-    if grouped.shape[0] < 2:
-        st.warning(f"No hay suficientes datos para calcular la línea de tendencia. Solo hay {grouped.shape[0]} año(s) con datos.")
-        return
+    # Verificar los datos agrupados
+    st.write("Datos climáticos agrupados por año:")
+    st.write(grouped_climate)
 
-    # Ver el DataFrame agrupado
-    st.write("Datos agrupados por año:")
-    st.write(grouped)
-
+    # Crear el gráfico de las variables climáticas con sus líneas de tendencia
     fig = go.Figure()
 
-    # Graficar las variables y sus líneas de tendencia
+    # Graficar las variables climáticas y sus líneas de tendencia
     for var in variables:
-        # Obtener los datos de la variable
-        x = grouped['YEAR']  # Usar directamente el año como variable independiente
-        y = grouped[var]
+        # Obtener los datos de la variable climática
+        x = grouped_climate['YEAR']
+        y = grouped_climate[var]
         
         # Calcular la línea de tendencia utilizando regresión lineal
         slope, intercept, _, _, _ = stats.linregress(x, y)
         trendline = slope * x + intercept
 
-        # Graficar la serie de tiempo
-        fig.add_trace(go.Scatter(x=grouped['YEAR'], y=grouped[var],
+        # Graficar la serie de tiempo de la variable climática
+        fig.add_trace(go.Scatter(x=grouped_climate['YEAR'], y=grouped_climate[var],
                                  mode='lines', name=f"{var} - Serie de Tiempo"))
 
         # Graficar la línea de tendencia
-        fig.add_trace(go.Scatter(x=grouped['YEAR'], y=trendline,
+        fig.add_trace(go.Scatter(x=grouped_climate['YEAR'], y=trendline,
                                  mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
 
     # Ajustar el diseño del gráfico
