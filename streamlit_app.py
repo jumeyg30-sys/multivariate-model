@@ -237,28 +237,15 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Inspeccionar los primeros valores de 'YEAR_MONTH'
-    st.write("Primeros registros de 'YEAR_MONTH':")
-    st.write(df['YEAR_MONTH'].head())
+    # Verificar los valores en la columna 'YEAR'
+    st.write("Valores en la columna 'YEAR':")
+    st.write(df['YEAR'].unique())  # Mostrar los valores únicos en 'YEAR'
 
-    # Asegurarse de que 'YEAR_MONTH' sea de tipo datetime y extraer el año
-    if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
-        try:
-            # Convertir YEAR_MONTH a formato datetime (solo extraemos el año)
-            df['YEAR'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce').dt.year
-        except Exception:
-            st.warning("No se pudo convertir 'YEAR_MONTH' a formato fecha.")
-            return
-
-    # Verificar si hay valores nulos en la columna 'YEAR' después de la conversión
+    # Verificar si hay valores nulos en la columna 'YEAR'
     if df['YEAR'].isnull().any():
-        st.warning("Algunos valores en 'YEAR' no pudieron ser extraídos y han sido descartados.")
+        st.warning("Algunos valores en la columna 'YEAR' son nulos y han sido descartados.")
         st.write(f"Cantidad de valores nulos en 'YEAR': {df['YEAR'].isnull().sum()}")
-        df = df.dropna(subset=['YEAR'])
-
-    # Verificar los valores únicos en 'YEAR' después de la conversión
-    st.write("Valores únicos en la columna 'YEAR':")
-    st.write(df['YEAR'].unique())
+        df = df.dropna(subset=['YEAR'])  # Eliminar las filas con valores nulos
 
     # Asegurarse de que la columna 'YEAR' sea de tipo entero
     if df['YEAR'].dtype != 'int':
@@ -267,14 +254,14 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     # Agrupar los datos por 'YEAR' y calcular la media de cada variable
     grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
+    # Verificar los datos agrupados
+    st.write("Datos agrupados por año:")
+    st.write(grouped)
+
     # Verificar si el DataFrame tiene suficientes datos para realizar la regresión
     if grouped.shape[0] < 2:
         st.warning(f"No hay suficientes datos para calcular la línea de tendencia. Solo hay {grouped.shape[0]} año(s) con datos.")
         return
-
-    # Ver el DataFrame agrupado
-    st.write("Datos agrupados por año:")
-    st.write(grouped)
 
     fig = go.Figure()
 
