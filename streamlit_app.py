@@ -215,6 +215,11 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
                  color_continuous_scale='RdBu', title="Importancia de variables")
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
+import pandas as pd
+import plotly.graph_objects as go
+import scipy.stats as stats
+import streamlit as st
+from typing import List
 
 def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia."""
@@ -226,52 +231,56 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     # Agrupar los datos por YEAR y calcular la media de cada variable
     grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
-    # Verificar si hay datos después del agrupamiento
     if grouped.empty:
         st.warning("No hay datos para las variables seleccionadas.")
         return
 
     fig = go.Figure()
 
-    # Graficar las variables y sus líneas de tendencia
     for var in variables:
         if var not in grouped.columns:
             st.warning(f"La variable '{var}' no se encuentra en los datos.")
             continue
-        
+
         x = grouped['YEAR']
         y = grouped[var]
-        
-        if y.isnull().all():
-            st.warning(f"No hay datos para la variable '{var}' en los años seleccionados.")
+
+        # Eliminar valores NaN antes de la regresión
+        mask = x.notna() & y.notna()
+        x_clean = x[mask]
+        y_clean = y[mask]
+
+        if len(x_clean) < 2:
+            st.warning(f"No hay suficientes datos para calcular la línea de tendencia de '{var}'.")
+            # Solo graficamos la serie de tiempo
+            fig.add_trace(go.Scatter(x=x, y=y, mode='lines+markers', name=f"{var} - Serie de Tiempo"))
             continue
-        
-        # Calcular la línea de tendencia utilizando regresión lineal
-        slope, intercept, _, _, _ = stats.linregress(x, y)
-        trendline = slope * x + intercept
+
+        # Calcular la línea de tendencia
+        slope, intercept, _, _, _ = stats.linregress(x_clean, y_clean)
+        trendline = slope * x_clean + intercept
 
         # Graficar la serie de tiempo
         fig.add_trace(go.Scatter(x=x, y=y,
-                                 mode='lines+markers',  # Agregué markers para que se vean los puntos
+                                 mode='lines+markers',
                                  name=f"{var} - Serie de Tiempo"))
 
         # Graficar la línea de tendencia
-        fig.add_trace(go.Scatter(x=x, y=trendline,
+        fig.add_trace(go.Scatter(x=x_clean, y=trendline,
                                  mode='lines',
                                  name=f"{var} - Tendencia",
                                  line=dict(dash='dash', width=2)))
 
-    # Ajustar el diseño del gráfico
     fig.update_layout(
         title="Series de tiempo de variables climáticas con líneas de tendencia",
         xaxis_title="Año",
         yaxis_title="Valor",
         template="plotly_dark",
-        xaxis=dict(dtick=1)  # Para que se muestren todos los años en el eje X
+        xaxis=dict(dtick=1)
     )
-    
-    # Mostrar el gráfico
+
     st.plotly_chart(fig, use_container_width=True)
+
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
