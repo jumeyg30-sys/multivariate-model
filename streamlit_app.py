@@ -381,11 +381,6 @@ def main() -> None:
 
     # Variables climáticas candidatas (siglas)
     climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
-
-    selected_var_box = st.sidebar.selectbox(
-    "Variable climática para boxplot:",
-    options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
-    index=0
 )
 
     # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
@@ -396,7 +391,6 @@ def main() -> None:
     )
     
     # Convertir las selecciones del usuario de vuelta a las siglas
-    selected_var_box_sigla = [var for var in climate_vars if climate_variable_names[var] == selected_var_box][0]
     selected_vars_time_siglas = [var for var in climate_vars if climate_variable_names[var] in selected_vars_time]
     
     # Top N de avistamientos (fuera del filtro de especie)
@@ -465,11 +459,6 @@ def main() -> None:
     else:
         st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
     
-    # Título del gráfico
-    st.markdown("### Series de tiempo de variables climáticas")
-    
-    # Mostrar el gráfico (después de la explicación)
-    plot_time_series(df, selected_vars_time)
 
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
