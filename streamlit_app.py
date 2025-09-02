@@ -464,16 +464,6 @@ def main() -> None:
             st.info("No se ha podido calcular la métrica porque la variable PRESENCIA no está disponible.")
     else:
         st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
-
-        # Cuadro informativo antes de mostrar el gráfico
-    st.info("""
-    **Instrucciones para leer el gráfico:**
-    - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
-    - **Eje X**: Año.
-    - **Eje Y**: Valor de la variable climática.
-    - **Líneas continuas**: Muestran la evolución de la variable a lo largo del tiempo.
-    - **Líneas discontinuas**: Representan la tendencia general (línea de regresión).
-    """)
     
     # Título del gráfico
     st.markdown("### Series de tiempo de variables climáticas")
