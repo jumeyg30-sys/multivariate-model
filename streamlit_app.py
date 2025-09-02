@@ -216,8 +216,6 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
 
-
-
 import pandas as pd
 import plotly.graph_objects as go
 import scipy.stats as stats
@@ -260,9 +258,13 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     # Agrupar los datos por 'YEAR' y calcular la media de cada variable
     grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
-    # Verificar si el DataFrame tiene suficientes datos
+    # Imprimir el DataFrame agrupado para revisar si los datos son correctos
+    st.write("Datos agrupados por año:")
+    st.write(grouped)
+
+    # Verificar si el DataFrame tiene suficientes datos para realizar la regresión
     if grouped.shape[0] < 2:
-        st.warning("No hay suficientes datos para calcular la línea de tendencia.")
+        st.warning(f"No hay suficientes datos para calcular la línea de tendencia. Solo hay {grouped.shape[0]} año(s) con datos.")
         return
 
     fig = go.Figure()
