@@ -101,6 +101,7 @@ import scipy.stats as stats
 import streamlit as st
 from typing import List
 
+# Función para graficar la serie de tiempo para las variables climáticas sin filtrar por especie
 def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
