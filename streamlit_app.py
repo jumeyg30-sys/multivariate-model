@@ -369,10 +369,19 @@ def main() -> None:
     species_df = filter_by_species(df, selected_common_name)
 
     # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
-    climate_vars = [
-        'PRECTOTCORR', 'PS', 'RH2M', 'T2M',  'T2MWET',
-        'T2M_MAX', 'TS',  'WS10M']
-    
+    climate_variable_names = {
+    'PRECTOTCORR': 'Precipitación total corregida',
+    'PS': 'Presión en superficie',
+    'RH2M': 'Humedad relativa',
+    'T2M': 'Temperatura a 2 metros',
+    'T2MWET': 'Temperatura media a 2 metros',
+    'T2M_MAX': 'Temperatura máxima a 2 metros',
+    'TS': 'Temperatura superficial',
+    'WS10M': 'Velocidad del viento a 10 metros'}
+
+    # Variables climáticas candidatas (siglas)
+    climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
+
     available_vars = [v for v in climate_vars if v in df.columns]
 
     # Widget para seleccionar variable de boxplot
