@@ -413,7 +413,7 @@ def main() -> None:
             logistic_feature_names = available_vars
 
         # Importancia de variables (coeficientes) usando las variables del modelo
-        def plot_variable_importance(logistic_model, logistic_feature_names)
+        def plot_variable_importance(logistic_model, logistic_feature_names):
         # Métricas para la especie seleccionada: se debe haber creado la columna PRESENCIA
         if 'PRESENCIA' in df.columns:
             try:
