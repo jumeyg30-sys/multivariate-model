@@ -382,7 +382,7 @@ def main() -> None:
     # Variables climáticas candidatas (siglas)
     climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
 
-      selected_var_box = st.sidebar.selectbox(
+    selected_var_box = st.sidebar.selectbox(
     "Variable climática para boxplot:",
     options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
     index=0
