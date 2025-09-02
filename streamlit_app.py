@@ -454,13 +454,17 @@ def main() -> None:
     else:
         st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
     
-
+        st.info("""
+    **Instrucciones para leer el gráfico:**
+    - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
+    - **Eje X**: Año.
+    - **Eje Y**: Valor de la variable climática.
+    - **Líneas continuas**: Muestran la evolución de la variable a lo largo del tiempo.
+    - **Líneas discontinuas**: Representan la tendencia general (línea de regresión).
+    """)
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
     plot_time_series(df, selected_vars_time_siglas)
-
-    # Título del gráfico
-    st.markdown("### Series de tiempo de variables climáticas")
     
     # Top N especies más avistadas
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
