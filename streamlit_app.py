@@ -216,6 +216,8 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
 
+
+
 import pandas as pd
 import plotly.graph_objects as go
 import scipy.stats as stats
@@ -237,15 +239,25 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Asegurarse de que la columna 'YEAR' sea de tipo int
-    if df['YEAR'].dtype != 'int':
+    # Asegurarse de que 'YEAR_MONTH' sea de tipo datetime y extraer el año
+    if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
         try:
-            df['YEAR'] = df['YEAR'].astype(int)
+            # Convertir YEAR_MONTH a formato datetime (solo extraemos el año)
+            df['YEAR'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce').dt.year
         except Exception:
-            st.warning("No se pudo convertir la columna 'YEAR' a tipo entero.")
+            st.warning("No se pudo convertir 'YEAR_MONTH' a formato fecha.")
             return
 
-    # Agrupar los datos por YEAR y calcular la media de cada variable
+    # Verificar si hay valores nulos en la columna 'YEAR' después de la conversión
+    if df['YEAR'].isnull().any():
+        st.warning("Algunos valores en 'YEAR' no pudieron ser extraídos y han sido descartados.")
+        df = df.dropna(subset=['YEAR'])
+
+    # Asegurarse de que la columna 'YEAR' sea de tipo entero
+    if df['YEAR'].dtype != 'int':
+        df['YEAR'] = df['YEAR'].astype(int)
+
+    # Agrupar los datos por 'YEAR' y calcular la media de cada variable
     grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
     # Verificar si el DataFrame tiene suficientes datos
@@ -281,7 +293,6 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
-
 
 
 
