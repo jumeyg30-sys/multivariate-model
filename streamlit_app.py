@@ -216,12 +216,6 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
 
-import pandas as pd
-import plotly.graph_objects as go
-import scipy.stats as stats
-import streamlit as st
-from typing import List
-
 def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia."""
 
@@ -229,22 +223,10 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Asegurarse de que YEAR_MONTH sea de tipo datetime
-    if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
-        try:
-            df['YEAR_MONTH'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce')
-        except Exception:
-            st.warning("No se pudo convertir YEAR_MONTH a formato fecha.")
-
-    # Extraer solo el año de YEAR_MONTH
-    df['Year'] = df['YEAR_MONTH'].dt.year
-
     # Agrupar los datos por YEAR y calcular la media de cada variable
-    grouped = df.groupby('Year')[variables].mean().reset_index()
+    grouped = df.groupby('YEAR')[variables].mean().reset_index()
 
     # Verificar si hay datos después del agrupamiento
-    st.write("Datos agrupados por año:", grouped)
-
     if grouped.empty:
         st.warning("No hay datos para las variables seleccionadas.")
         return
@@ -257,8 +239,7 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
             st.warning(f"La variable '{var}' no se encuentra en los datos.")
             continue
         
-        # Obtener los datos de la variable
-        x = grouped['Year']
+        x = grouped['YEAR']
         y = grouped[var]
         
         if y.isnull().all():
@@ -270,18 +251,24 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
         trendline = slope * x + intercept
 
         # Graficar la serie de tiempo
-        fig.add_trace(go.Scatter(x=grouped['Year'], y=grouped[var],
-                                 mode='lines', name=f"{var} - Serie de Tiempo"))
+        fig.add_trace(go.Scatter(x=x, y=y,
+                                 mode='lines+markers',  # Agregué markers para que se vean los puntos
+                                 name=f"{var} - Serie de Tiempo"))
 
         # Graficar la línea de tendencia
-        fig.add_trace(go.Scatter(x=grouped['Year'], y=trendline,
-                                 mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
+        fig.add_trace(go.Scatter(x=x, y=trendline,
+                                 mode='lines',
+                                 name=f"{var} - Tendencia",
+                                 line=dict(dash='dash', width=2)))
 
     # Ajustar el diseño del gráfico
-    fig.update_layout(title="Series de tiempo de variables climáticas con líneas de tendencia",
-                      xaxis_title="Año",
-                      yaxis_title="Valor",
-                      template="plotly_dark")
+    fig.update_layout(
+        title="Series de tiempo de variables climáticas con líneas de tendencia",
+        xaxis_title="Año",
+        yaxis_title="Valor",
+        template="plotly_dark",
+        xaxis=dict(dtick=1)  # Para que se muestren todos los años en el eje X
+    )
     
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
