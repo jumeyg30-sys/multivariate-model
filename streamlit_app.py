@@ -161,33 +161,6 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
 
-# Función principal
-def main():
-    # Cargar los datos (df para avistamientos, df_climate para variables climáticas)
-    # df_climate contiene las variables climáticas completas, sin filtro por especie
-    st.write("Primeros registros de df_climate (variables climáticas):")
-    st.write(df_climate.head())  # Muestra las primeras filas del DataFrame de variables climáticas
-
-    # Selección de especie para los avistamientos
-    selected_common_name = st.selectbox("Seleccione el nombre común de la especie:", options=df['COMMON NAME'].unique())
-
-    # Filtrar el DataFrame de avistamientos para la especie seleccionada
-    df_species = df[df['COMMON NAME'] == selected_common_name]
-    
-    # Mostrar información sobre los avistamientos de la especie seleccionada
-    st.write(f"Total de avistamientos para {selected_common_name}:")
-    st.write(df_species)
-
-    # Selección de variables climáticas para mostrar
-    selected_vars_time = st.multiselect("Selecciona las variables climáticas", options=['T2M', 'PRECTOTCORR', 'RH2M'], default=['T2M'])
-
-    # Llamar a la función plot_time_series con el DataFrame de variables climáticas (df_climate)
-    plot_time_series(df_climate, selected_vars_time)
-
-if __name__ == "__main__":
-    main()
-
-
 def get_species_mapping(df: pd.DataFrame) -> pd.DataFrame:
     """Obtiene un DataFrame con pares únicos de nombre común y científico.
 
