@@ -395,46 +395,10 @@ def main() -> None:
     plot_boxplot(species_df, selected_var_box)
     # Resultados del modelo logístico para la especie seleccionada
     st.markdown("### Modelo logístico general (importancia de variables y métricas)")
-    if logistic_model is not None:
-        # Determinar las variables que utiliza el modelo
-        logistic_feature_names: List[str]
-        try:
-            # Usar las variables almacenadas en el modelo, si están disponibles
-            if hasattr(logistic_model, 'feature_names_in_'):
-                logistic_feature_names = [
-                    f for f in logistic_model.feature_names_in_ if f in df.columns
-                ]
-            else:
-                # Si no existe feature_names_in_, asumir que las primeras variables de available_vars
-                # coinciden con el número de coeficientes
-                num_feats = len(logistic_model.coef_.ravel())
-                logistic_feature_names = available_vars[:num_feats]
-        except Exception:
-            logistic_feature_names = available_vars
 
-        # Importancia de variables (coeficientes) usando las variables del modelo
-        plot_variable_importance(logistic_model, logistic_feature_names)
-        # Métricas para la especie seleccionada: se debe haber creado la columna PRESENCIA
-        if 'PRESENCIA' in df.columns:
-            try:
-                X_spec = species_df[logistic_feature_names].dropna()
-            except Exception:
-                X_spec = pd.DataFrame()
-            if not X_spec.empty:
-                y_spec = species_df.loc[X_spec.index, 'PRESENCIA']
-                acc_spec, auc_spec = compute_model_metrics(logistic_model, X_spec, y_spec)
-                st.write(f"Exactitud para la especie seleccionada: {acc_spec:.2f}")
-                st.write(f"AUC para la especie seleccionada: {auc_spec:.2f}")
-            else:
-                st.info("No hay suficientes datos para evaluar el modelo logístico en esta especie.")
-        else:
-            st.info("No se ha podido calcular la métrica porque la variable PRESENCIA no está disponible.")
-    else:
-        st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
-        
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
-    plot_time_series(species_df, selected_vars_time)
+    plot_time_series(df, selected_vars_time)
 
     # Top N especies más avistadas
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
