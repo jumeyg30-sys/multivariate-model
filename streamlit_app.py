@@ -221,13 +221,12 @@ import scipy.stats as stats
 import streamlit as st
 from typing import List
 
-def plot_time_series(df: pd.DataFrame, variables: List[str], species_df: pd.DataFrame) -> None:
+def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
     Args:
-        df: DataFrame de avistamientos de aves.
+        df: DataFrame de datos completos, sin filtrar por especie.
         variables: Lista de variables climáticas a mostrar.
-        species_df: DataFrame de datos climáticos completos, sin filtrar por especie.
 
     Se agrupan los datos por ``YEAR`` y se calcula la media de cada
     variable climática. Cada variable se grafica en la misma figura para facilitar la
@@ -237,25 +236,16 @@ def plot_time_series(df: pd.DataFrame, variables: List[str], species_df: pd.Data
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Asegurarse de que 'YEAR_MONTH' en species_df sea de tipo datetime y extraer el año
-    if species_df['YEAR_MONTH'].dtype != 'datetime64[ns]':
+    # Asegurarse de que 'YEAR' en df esté presente como tipo entero
+    if df['YEAR'].dtype != 'int':
         try:
-            species_df['YEAR'] = pd.to_datetime(species_df['YEAR_MONTH'], errors='coerce').dt.year
+            df['YEAR'] = df['YEAR'].astype(int)
         except Exception:
-            st.warning("No se pudo convertir 'YEAR_MONTH' a formato fecha.")
+            st.warning("No se pudo convertir la columna 'YEAR' a tipo entero.")
             return
 
-    # Verificar si hay valores nulos en la columna 'YEAR' después de la conversión
-    if species_df['YEAR'].isnull().any():
-        st.warning("Algunos valores en 'YEAR' no pudieron ser extraídos y han sido descartados.")
-        species_df = species_df.dropna(subset=['YEAR'])
-
-    # Asegurarse de que la columna 'YEAR' sea de tipo entero
-    if species_df['YEAR'].dtype != 'int':
-        species_df['YEAR'] = species_df['YEAR'].astype(int)
-
-    # Agrupar los datos climáticos por 'YEAR' y calcular la media de cada variable
-    grouped_climate = species_df.groupby('YEAR')[variables].mean().reset_index()
+    # Agrupar los datos climáticos por 'YEAR' y calcular la media de cada variable climática
+    grouped_climate = df.groupby('YEAR')[variables].mean().reset_index()
 
     # Verificar los datos agrupados
     st.write("Datos climáticos agrupados por año:")
@@ -290,6 +280,22 @@ def plot_time_series(df: pd.DataFrame, variables: List[str], species_df: pd.Data
     
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
+
+# Función principal
+def main():
+    # Asegúrate de que 'df' está correctamente definido (con las variables climáticas)
+    st.write("Primeros registros de df:")
+    st.write(df.head())  # Muestra las primeras filas del DataFrame 'df'
+
+    # Selección de variables climáticas para mostrar
+    selected_vars_time = st.multiselect("Selecciona las variables climáticas", options=['T2M', 'PRECTOTCORR', 'RH2M'], default=['T2M'])
+
+    # Llamar a la función plot_time_series con el DataFrame 'df'
+    plot_time_series(df, selected_vars_time)
+
+if __name__ == "__main__":
+    main()
+
 
 
 
