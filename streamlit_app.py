@@ -414,10 +414,6 @@ def main() -> None:
 
     # Contenido principal
     st.subheader(f"Especie seleccionada: {selected_common_name}")
-
-    # Boxplot
-    st.markdown("### Distribución de la variable climática")
-    plot_boxplot(species_df, selected_var_box)
     # Resultados del modelo logístico para la especie seleccionada
     st.markdown("### Modelo logístico general (importancia de variables y métricas)")
     if logistic_model is not None:
