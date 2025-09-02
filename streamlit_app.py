@@ -382,18 +382,23 @@ def main() -> None:
     # Variables climáticas candidatas (siglas)
     climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
 
-    available_vars = [v for v in climate_vars if v in df.columns]
+      selected_var_box = st.sidebar.selectbox(
+    "Variable climática para boxplot:",
+    options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
+    index=0
+)
 
-    # Widget para seleccionar variable de boxplot
-    selected_var_box = st.sidebar.selectbox(
-        "Variable climática para boxplot:", available_vars, index=0
-    )
-
-    # Widget para seleccionar variables para la serie de tiempo
+    # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
     selected_vars_time = st.sidebar.multiselect(
-        "Variables climáticas para series de tiempo:", available_vars, default=[]
+        "Variables climáticas para series de tiempo:",
+        options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
+        default=[]
     )
-
+    
+    # Convertir las selecciones del usuario de vuelta a las siglas
+    selected_var_box_sigla = [var for var in climate_vars if climate_variable_names[var] == selected_var_box][0]
+    selected_vars_time_siglas = [var for var in climate_vars if climate_variable_names[var] in selected_vars_time]
+    
     # Top N de avistamientos (fuera del filtro de especie)
     st.sidebar.markdown("---")
     max_n = min(20, species_mapping.shape[0])  # limite de especies a mostrar
@@ -462,8 +467,8 @@ def main() -> None:
         
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
-    plot_time_series(df, selected_vars_time)
-
+    plot_time_series(df, selected_vars_time_siglas)
+    
     # Top N especies más avistadas
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
     plot_top_n_birds(df, n_top)
