@@ -365,10 +365,10 @@ def main() -> None:
         st.markdown(kpi_html, unsafe_allow_html=True)
 
 
-    # Filtrar datos por especie
+        # Filtrar datos por especie
     species_df = filter_by_species(df, selected_common_name)
-
-    # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
+    
+    # Variables climáticas candidatas
     climate_vars = [
         'PRECTOTCORR', 'PS', 'QV2M', 'RH2M', 'T2M', 'T2MDEW', 'T2MWET',
         'T2M_MAX', 'T2M_MIN', 'T2M_RANGE', 'TS', 'WD10M', 'WD2M', 'WS10M',
@@ -376,40 +376,20 @@ def main() -> None:
         'WS2M_MIN', 'WS2M_RANGE'
     ]
     available_vars = [v for v in climate_vars if v in df.columns]
-
+    
     # Widget para seleccionar variable de boxplot
     selected_var_box = st.sidebar.selectbox(
         "Variable climática para boxplot:", available_vars, index=0
     )
-
+    
     # Widget para seleccionar variables para la serie de tiempo
     selected_vars_time = st.sidebar.multiselect(
         "Variables climáticas para series de tiempo:", available_vars, default=[]
     )
-
-    # Top N de avistamientos (fuera del filtro de especie)
-    st.sidebar.markdown("---")
-    max_n = min(20, species_mapping.shape[0])  # limite de especies a mostrar
-    n_top = st.sidebar.slider("Número de especies para Top N", 5, max_n, 5)
-
-    # Carga de modelos predictivos
-    st.sidebar.markdown("---")
-    st.sidebar.header("Modelos predictivos")
-    # Modelos para predecir cantidades (uno por especie)
-    model_paths = {
-        'Especie 1': Path('model_especie1.pkl'),
-        'Especie 2': Path('model_especie2.pkl'),
-        'Especie 3': Path('model_especie3.pkl')
-    }
     
-    models = load_models(model_paths)
-    # Modelo logístico general para presencia/ausencia
-    logistic_model_path = Path('model_logistic.pkl')
-    logistic_model = load_logistic_model(logistic_model_path)
-
-    # Contenido principal
-    st.subheader(f"Especie seleccionada: {selected_common_name}")
-
+    # Aquí, asegúrate de usar el DataFrame original df para la serie de tiempo, no species_df
+    plot_time_series(df, selected_vars_time)
+    
     # Boxplot
     st.markdown("### Distribución de la variable climática")
     plot_boxplot(species_df, selected_var_box)
