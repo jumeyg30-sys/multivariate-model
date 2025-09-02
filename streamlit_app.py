@@ -128,10 +128,6 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
     # Agrupar los datos climáticos por 'YEAR' y calcular la media de cada variable climática
     grouped_climate = df_climate.groupby('YEAR')[variables].mean().reset_index()
 
-    # Verificar los datos agrupados
-    st.write("Datos climáticos agrupados por año:")
-    st.write(grouped_climate)
-
     # Crear el gráfico de las variables climáticas con sus líneas de tendencia
     fig = go.Figure()
 
@@ -456,9 +452,7 @@ def main() -> None:
     
     st.info("""
     **Instrucciones para leer el gráfico:**
-    - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
-    - **Eje X**: Año.
-    - **Eje Y**: Valor de la variable climática.
+    El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
     - **Líneas continuas**: Muestran la evolución de la variable a lo largo del tiempo.
     - **Líneas discontinuas**: Representan la tendencia general (línea de regresión).
     """)
