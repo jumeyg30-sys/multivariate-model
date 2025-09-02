@@ -150,7 +150,7 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
                                  mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
 
     # Ajustar el diseño del gráfico
-    fig.update_layout(title="Series de tiempo de variables climáticas con líneas de tendencia",
+    fig.update_layout(title="",
                       xaxis_title="Año",
                       yaxis_title="Valor",
                       template="plotly_dark")
@@ -348,7 +348,7 @@ def main() -> None:
     
     with col4:
         endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
-        endemica_texto = endemica.apply(lambda x: 'ES ENDÉMICA' if x else 'NO ES ENDÉMICA')
+        endemica_texto = endemica.apply(lambda x: 'Especie endèmica' if x else 'Especie no endémica')
         
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
@@ -390,7 +390,7 @@ def main() -> None:
     
     # Top N de avistamientos (fuera del filtro de especie)
     st.sidebar.markdown("---")
-    max_n = min(20, species_mapping.shape[0])  # limite de especies a mostrar
+    max_n = min(10, species_mapping.shape[0])  # limite de especies a mostrar
     n_top = st.sidebar.slider("Número de especies para Top N", 5, max_n, 5)
 
     # Carga de modelos predictivos
@@ -452,7 +452,7 @@ def main() -> None:
     
     st.info("""
     **Instrucciones para leer el gráfico:**
-    El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
+    - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
     - **Líneas continuas**: Muestran la evolución de la variable a lo largo del tiempo.
     - **Líneas discontinuas**: Representan la tendencia general (línea de regresión).
     """)
