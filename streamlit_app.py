@@ -370,11 +370,9 @@ def main() -> None:
 
     # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
     climate_vars = [
-        'PRECTOTCORR', 'PS', 'QV2M', 'RH2M', 'T2M', 'T2MDEW', 'T2MWET',
-        'T2M_MAX', 'T2M_MIN', 'T2M_RANGE', 'TS', 'WD10M', 'WD2M', 'WS10M',
-        'WS10M_MAX', 'WS10M_MIN', 'WS10M_RANGE', 'WS2M', 'WS2M_MAX',
-        'WS2M_MIN', 'WS2M_RANGE'
-    ]
+        'PRECTOTCORR', 'PS', 'RH2M', 'T2M',  'T2MWET',
+        'T2M_MAX', 'TS',  'WS10M']
+    
     available_vars = [v for v in climate_vars if v in df.columns]
 
     # Widget para seleccionar variable de boxplot
@@ -455,7 +453,7 @@ def main() -> None:
         
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
-    plot_time_series(species_df, selected_vars_time)
+    plot_time_series(df, selected_vars_time)
 
     # Top N especies más avistadas
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
