@@ -405,56 +405,62 @@ def main() -> None:
 
     # Contenido principal
     st.subheader(f"Especie seleccionada: {selected_common_name}")
+        
     
     # Resultados del modelo logístico para la especie seleccionada
     st.markdown("### Modelo logístico general (importancia de variables y métricas)")
+    
     if logistic_model is not None:
         # Determinar las variables que utiliza el modelo
         logistic_feature_names: List[str]
         try:
-            # Usar las variables almacenadas en el modelo, si están disponibles
             if hasattr(logistic_model, 'feature_names_in_'):
                 logistic_feature_names = [
                     f for f in logistic_model.feature_names_in_ if f in df.columns
                 ]
             else:
-                # Si no existe feature_names_in_, asumir que las primeras variables de available_vars
-                # coinciden con el número de coeficientes
                 num_feats = len(logistic_model.coef_.ravel())
                 logistic_feature_names = available_vars[:num_feats]
         except Exception:
             logistic_feature_names = available_vars
-
     
         # Importancia de variables (coeficientes) usando las variables del modelo
         plot_variable_importance(logistic_model, logistic_feature_names)
     
         # Verificar que 'PRESENCIA' esté disponible en species_df
         if 'PRESENCIA' not in species_df.columns:
-            # Crear la columna 'PRESENCIA' si no existe
-            species_df['PRESENCIA'] = species_df['AVISTAMIENTOS'].apply(lambda x: 1 if x > 0 else 0)
+            species_df['PRESENCIA'] = species_df['avistamientos'].apply(lambda x: 1 if x > 0 else 0)
     
-        # Ahora, calculamos las métricas solo si 'PRESENCIA' está disponible
+        # Asegurarse de que 'PRESENCIA' esté disponible para el cálculo de las métricas
         if 'PRESENCIA' in species_df.columns:
             try:
-                X_spec = species_df[logistic_feature_names].dropna()  # Variables climáticas
-            except Exception:
-                X_spec = pd.DataFrame()
-            
-            if not X_spec.empty:
-                y_spec = species_df.loc[X_spec.index, 'PRESENCIA']  # La columna 'PRESENCIA' debe estar alineada con X_spec
-                acc_spec, auc_spec = compute_model_metrics(logistic_model, X_spec, y_spec)
-                st.write(f"Exactitud para la especie seleccionada: {acc_spec:.2f}")
-                st.write(f"AUC para la especie seleccionada: {auc_spec:.2f}")
-            else:
-                st.info("No hay suficientes datos para evaluar el modelo logístico en esta especie.")
+                # Filtrar las variables climáticas y eliminamos los valores nulos
+                X_spec = species_df[logistic_feature_names].dropna()
+                # Verificar si X_spec tiene filas
+                if X_spec.empty:
+                    st.info("No hay datos suficientes para calcular las métricas.")
+                else:
+                    # Alinear X_spec con y_spec
+                    y_spec = species_df.loc[X_spec.index, 'PRESENCIA']
+    
+                    # Asegurarse de que X_spec y y_spec tienen las mismas dimensiones
+                    st.write(f"Dimensiones de X_spec: {X_spec.shape}")
+                    st.write(f"Dimensiones de y_spec: {y_spec.shape}")
+    
+                    # Calcular métricas si ambos no están vacíos
+                    if not X_spec.empty and not y_spec.empty:
+                        acc_spec, auc_spec = compute_model_metrics(logistic_model, X_spec, y_spec)
+                        st.write(f"Exactitud para la especie seleccionada: {acc_spec:.2f}")
+                        st.write(f"AUC para la especie seleccionada: {auc_spec:.2f}")
+                    else:
+                        st.info("No hay suficientes datos para evaluar el modelo logístico en esta especie.")
+            except Exception as e:
+                st.warning(f"Error al calcular las métricas: {e}")
         else:
             st.info("No se ha podido calcular la métrica porque la variable 'PRESENCIA' no está disponible.")
     else:
         st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
-
-    st.write("Dimensiones de X_spec:", X_spec.shape)
-    st.write("Dimensiones de y_spec:", y_spec.shape)
+    
 
     st.info("""
     **Instrucciones para leer el gráfico:**
