@@ -12,7 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn import metrics
-
+from utils import compute_model_metrics
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
@@ -52,6 +52,20 @@ def load_dataset(zip_path: Path) -> pd.DataFrame:
         df['MONTH'] = pd.to_numeric(df['MONTH'], errors='coerce').astype('Int64')
 
     return df
+from sklearn.metrics import accuracy_score, roc_auc_score
+
+def compute_model_metrics(model, X, y):
+    """Calcula las métricas del modelo, como la exactitud (Accuracy) y AUC."""
+    # Realiza las predicciones con el modelo
+    y_pred = model.predict(X)
+    
+    # Calcular Exactitud (Accuracy)
+    acc = accuracy_score(y, y_pred)
+    
+    # Calcular AUC (Área bajo la curva ROC)
+    auc = roc_auc_score(y, y_pred)
+    
+    return acc, auc
 
 @st.cache_data(show_spinner=True)
 def load_models(model_paths: Dict[str, Path]) -> Dict[str, object]:
