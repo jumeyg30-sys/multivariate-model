@@ -95,11 +95,6 @@ def load_logistic_model(model_path: Path):
             return None
     else:
         return None
-import pandas as pd
-import plotly.graph_objects as go
-import scipy.stats as stats
-import streamlit as st
-from typing import List
 
 # Función para graficar la serie de tiempo para las variables climáticas sin filtrar por especie
 def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
@@ -436,7 +431,7 @@ def main() -> None:
         
                 # Crear la columna 'PRESENCIA' a partir de 'avistamientos'
         # Si hay al menos un avistamiento, PRESENCIA será 1 (especie presente), de lo contrario 0 (especie ausente)
-        df['PRESENCIA'] = df['avistamientos'].apply(lambda x: 1 if x > 0 else 0)
+        df['PRESENCIA'] = df['AVISTAMIENTOS'].apply(lambda x: 1 if x > 0 else 0)
 
         # Métricas para la especie seleccionada: se debe haber creado la columna PRESENCIA
         if 'PRESENCIA' in df.columns:
