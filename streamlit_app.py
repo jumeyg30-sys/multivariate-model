@@ -281,24 +281,6 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
 
-# Función principal
-def main():
-    # Asegúrate de que 'df' está correctamente definido (con las variables climáticas)
-    st.write("Primeros registros de df:")
-    st.write(df.head())  # Muestra las primeras filas del DataFrame 'df'
-
-    # Selección de variables climáticas para mostrar
-    selected_vars_time = st.multiselect("Selecciona las variables climáticas", options=['T2M', 'PRECTOTCORR', 'RH2M'], default=['T2M'])
-
-    # Llamar a la función plot_time_series con el DataFrame 'df'
-    plot_time_series(df, selected_vars_time)
-
-if __name__ == "__main__":
-    main()
-
-
-
-
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
     st.markdown('<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>', unsafe_allow_html=True)
