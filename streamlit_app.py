@@ -12,7 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn import metrics
-from utils import compute_model_metrics
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
