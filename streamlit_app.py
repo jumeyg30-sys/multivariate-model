@@ -432,7 +432,7 @@ def main() -> None:
         # Verificar que 'PRESENCIA' esté disponible en species_df
         if 'PRESENCIA' not in species_df.columns:
             # Crear la columna 'PRESENCIA' si no existe
-            species_df['PRESENCIA'] = species_df['avistamientos'].apply(lambda x: 1 if x > 0 else 0)
+            species_df['PRESENCIA'] = species_df['AVISTAMIENTOS'].apply(lambda x: 1 if x > 0 else 0)
     
         # Ahora, calculamos las métricas solo si 'PRESENCIA' está disponible
         if 'PRESENCIA' in species_df.columns:
