@@ -216,38 +216,61 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
 
+import pandas as pd
+import plotly.graph_objects as go
+import scipy.stats as stats
+import streamlit as st
+from typing import List
 
 def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
-    """Grafica series de tiempo para las variables seleccionadas.
+    """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia."""
 
-    Args:
-        df: DataFrame filtrado por especie.
-        variables: Lista de variables climáticas a mostrar.
-
-    Se agrupan los datos por ``YEAR_MONTH`` y se calcula la media de cada
-    variable. Cada variable se grafica en la misma figura para facilitar la
-    comparación temporal.
-    """
     if not variables:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Asegurarse de que ``YEAR_MONTH`` sea de tipo datetime
+    # Asegurarse de que YEAR_MONTH sea de tipo datetime
     if df['YEAR_MONTH'].dtype != 'datetime64[ns]':
         try:
             df['YEAR_MONTH'] = pd.to_datetime(df['YEAR_MONTH'], errors='coerce')
         except Exception:
             st.warning("No se pudo convertir YEAR_MONTH a formato fecha.")
 
-    grouped = df.groupby('YEAR_MONTH')[variables].mean().reset_index()
+    # Extraer solo el año de YEAR_MONTH
+    df['Year'] = df['YEAR_MONTH'].dt.year
+
+    # Agrupar los datos por YEAR y calcular la media de cada variable
+    grouped = df.groupby('Year')[variables].mean().reset_index()
+    
     fig = go.Figure()
+
+    # Graficar las variables y sus líneas de tendencia
     for var in variables:
-        fig.add_trace(go.Scatter(x=grouped['YEAR_MONTH'], y=grouped[var],
-                                 mode='lines', name=var))
-    fig.update_layout(title="Series de tiempo de variables climáticas",
-                      xaxis_title="Fecha",
-                      yaxis_title="Valor")
+        # Obtener los datos de la variable
+        x = grouped['Year']
+        y = grouped[var]
+        
+        # Calcular la línea de tendencia utilizando regresión lineal
+        slope, intercept, _, _, _ = stats.linregress(x, y)
+        trendline = slope * x + intercept
+
+        # Graficar la serie de tiempo
+        fig.add_trace(go.Scatter(x=grouped['Year'], y=grouped[var],
+                                 mode='lines', name=f"{var} - Serie de Tiempo"))
+
+        # Graficar la línea de tendencia
+        fig.add_trace(go.Scatter(x=grouped['Year'], y=trendline,
+                                 mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
+
+    # Ajustar el diseño del gráfico
+    fig.update_layout(title="Series de tiempo de variables climáticas con líneas de tendencia",
+                      xaxis_title="Año",
+                      yaxis_title="Valor",
+                      template="plotly_dark")
+    
+    # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
+
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
