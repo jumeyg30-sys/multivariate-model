@@ -215,17 +215,18 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
                  color_continuous_scale='RdBu', title="Importancia de variables")
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
     st.plotly_chart(fig, use_container_width=True)
+
 import pandas as pd
 import plotly.graph_objects as go
 import scipy.stats as stats
 import streamlit as st
 from typing import List
 
-def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
+def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
     Args:
-        df: DataFrame de datos completos, sin filtrar por especie.
+        df_climate: DataFrame de datos climáticos completos (sin filtrar por especie).
         variables: Lista de variables climáticas a mostrar.
 
     Se agrupan los datos por ``YEAR`` y se calcula la media de cada
@@ -236,16 +237,16 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Asegurarse de que 'YEAR' en df esté presente como tipo entero
-    if df['YEAR'].dtype != 'int':
+    # Asegurarse de que 'YEAR' en df_climate esté presente como tipo entero
+    if df_climate['YEAR'].dtype != 'int':
         try:
-            df['YEAR'] = df['YEAR'].astype(int)
+            df_climate['YEAR'] = df_climate['YEAR'].astype(int)
         except Exception:
             st.warning("No se pudo convertir la columna 'YEAR' a tipo entero.")
             return
 
     # Agrupar los datos climáticos por 'YEAR' y calcular la media de cada variable climática
-    grouped_climate = df.groupby('YEAR')[variables].mean().reset_index()
+    grouped_climate = df_climate.groupby('YEAR')[variables].mean().reset_index()
 
     # Verificar los datos agrupados
     st.write("Datos climáticos agrupados por año:")
@@ -280,6 +281,35 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
+
+# Función principal
+def main():
+    # Cargar los datos (suponiendo que tienes df y df_climate)
+    # df_climate contiene las variables climáticas completas, sin filtro por especie
+    st.write("Primeros registros de df_climate (variables climáticas):")
+    st.write(df_climate.head())  # Muestra las primeras filas del DataFrame de variables climáticas
+
+    # Selección de especie para los avistamientos
+    selected_common_name = st.selectbox("Seleccione el nombre común de la especie:", options=df['COMMON NAME'].unique())
+
+    # Filtrar el DataFrame de avistamientos para la especie seleccionada
+    df_species = df[df['COMMON NAME'] == selected_common_name]
+    
+    # Mostrar información sobre los avistamientos de la especie seleccionada
+    st.write(f"Total de avistamientos para {selected_common_name}:")
+    st.write(df_species)
+
+    # Selección de variables climáticas para mostrar
+    selected_vars_time = st.multiselect("Selecciona las variables climáticas", options=['T2M', 'PRECTOTCORR', 'RH2M'], default=['T2M'])
+
+    # Llamar a la función plot_time_series con el DataFrame de variables climáticas
+    plot_time_series(df_climate, selected_vars_time)
+
+if __name__ == "__main__":
+    main()
+
+
+
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
