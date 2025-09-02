@@ -241,14 +241,29 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
 
     # Agrupar los datos por YEAR y calcular la media de cada variable
     grouped = df.groupby('Year')[variables].mean().reset_index()
-    
+
+    # Verificar si hay datos después del agrupamiento
+    st.write("Datos agrupados por año:", grouped)
+
+    if grouped.empty:
+        st.warning("No hay datos para las variables seleccionadas.")
+        return
+
     fig = go.Figure()
 
     # Graficar las variables y sus líneas de tendencia
     for var in variables:
+        if var not in grouped.columns:
+            st.warning(f"La variable '{var}' no se encuentra en los datos.")
+            continue
+        
         # Obtener los datos de la variable
         x = grouped['Year']
         y = grouped[var]
+        
+        if y.isnull().all():
+            st.warning(f"No hay datos para la variable '{var}' en los años seleccionados.")
+            continue
         
         # Calcular la línea de tendencia utilizando regresión lineal
         slope, intercept, _, _, _ = stats.linregress(x, y)
@@ -270,7 +285,6 @@ def plot_time_series(df: pd.DataFrame, variables: List[str]) -> None:
     
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
-
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
