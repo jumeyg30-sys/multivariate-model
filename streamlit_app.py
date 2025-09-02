@@ -469,30 +469,30 @@ def main() -> None:
     st.markdown("### Series de tiempo de variables climáticas")
     plot_time_series(df, selected_vars_time_siglas)
 
-# Título del gráfico
-st.markdown("### Series de tiempo de variables climáticas")
-
-# Explicación de cómo leer el gráfico
-st.markdown("""
-#### Instrucciones para leer el gráfico:
-- **Ejes del gráfico**:
-  - **Eje X (horizontal)**: Representa el **Año**.
-  - **Eje Y (vertical)**: Representa el valor de la variable climática seleccionada.
-  
-- **Líneas de serie de tiempo**: Cada línea en el gráfico representa los valores de la variable climática seleccionada para cada año.
-
-- **Líneas de tendencia**:
-  - La **línea continua** muestra la evolución de la variable climática a lo largo del tiempo.
-  - La **línea discontinua (dashed)** representa la **línea de tendencia** calculada mediante regresión lineal, que indica la dirección general del cambio de la variable a lo largo del tiempo.
-
-- **Interpretación**:
-  - Si la línea de tendencia es ascendente, significa que la variable climática ha aumentado con el tiempo.
-  - Si es descendente, indica que la variable ha disminuido.
-
-- **Notas adicionales**:
-  - Puedes seleccionar varias variables climáticas en el filtro para compararlas en el mismo gráfico.
-""")
-
+    # Título del gráfico
+    st.markdown("### Series de tiempo de variables climáticas")
+    
+    # Explicación de cómo leer el gráfico
+    st.markdown("""
+    #### Instrucciones para leer el gráfico:
+    - **Ejes del gráfico**:
+      - **Eje X (horizontal)**: Representa el **Año**.
+      - **Eje Y (vertical)**: Representa el valor de la variable climática seleccionada.
+      
+    - **Líneas de serie de tiempo**: Cada línea en el gráfico representa los valores de la variable climática seleccionada para cada año.
+    
+    - **Líneas de tendencia**:
+      - La **línea continua** muestra la evolución de la variable climática a lo largo del tiempo.
+      - La **línea discontinua (dashed)** representa la **línea de tendencia** calculada mediante regresión lineal, que indica la dirección general del cambio de la variable a lo largo del tiempo.
+    
+    - **Interpretación**:
+      - Si la línea de tendencia es ascendente, significa que la variable climática ha aumentado con el tiempo.
+      - Si es descendente, indica que la variable ha disminuido.
+    
+    - **Notas adicionales**:
+      - Puedes seleccionar varias variables climáticas en el filtro para compararlas en el mismo gráfico.
+    """)
+    
 
     
     # Top N especies más avistadas
