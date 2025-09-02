@@ -454,7 +454,7 @@ def main() -> None:
     else:
         st.info("No se ha cargado un modelo logístico general. Asegúrese de incluir el archivo 'model_logistic.pkl'.")
     
-        st.info("""
+    st.info("""
     **Instrucciones para leer el gráfico:**
     - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
     - **Eje X**: Año.
