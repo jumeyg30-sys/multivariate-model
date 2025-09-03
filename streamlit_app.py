@@ -312,16 +312,21 @@ def main() -> None:
         species_mapping['COMMON NAME'] == selected_common_name, 'SCIENTIFIC NAME'
     ].iloc[0]
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
+
     st.markdown("🐦 ESTADÍSTICA DE AVES")
+    
+    # Definimos las columnas
     col1, col2, col3, col4 = st.columns(4)
     
+    # Definimos una altura fija para las cajas
+    height = 200  # Ajusta la altura según sea necesario
+    
+    # Caja 1: Total de Aves
     with col1:
         aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
-        
-        # Personalizar KPI con HTML y CSS
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size: 22px;">🦜 Total de Aves</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
@@ -329,12 +334,12 @@ def main() -> None:
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
     
+    # Caja 2: Total de la especie seleccionada
     with col2:
         aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
-    
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
@@ -342,12 +347,12 @@ def main() -> None:
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
     
+    # Caja 3: Categoría UICN
     with col3:
         Peligro = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
-        
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">Categoría UICN</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{Peligro.iloc[0]}</h3>
@@ -355,20 +360,19 @@ def main() -> None:
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
     
+    # Caja 4: Distribución Geográfica
     with col4:
         endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
         endemica_texto = endemica.apply(lambda x: 'Especie endèmica' if x else 'Especie no endémica')
-        
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); min-height: 150px; display: flex; flex-direction: column; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">Distribución Geográfica</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{endemica_texto.iloc[0]}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-
 
     # Filtrar datos por especie
     species_df = filter_by_species(df, selected_common_name)
