@@ -437,7 +437,6 @@ def main() -> None:
                 logistic_feature_names = available_vars[:num_feats]
         except Exception:
             logistic_feature_names = available_vars
-        ---------------------------------
     
         # Importancia de variables (coeficientes) usando las variables del modelo
         plot_variable_importance(logistic_model, logistic_feature_names)
