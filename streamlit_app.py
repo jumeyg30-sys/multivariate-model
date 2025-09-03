@@ -254,7 +254,7 @@ def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
         st.warning("No se pudo generar el diagrama de cajas debido a un error con los datos.")
         
 
-def plot_variable_importance(model, feature_names: List[str]) -> None:
+def plot_variable_importance(model, feature_names: List[str], key: str) -> None:
     """Grafica la importancia de las variables de un modelo logístico.
 
     Args:
@@ -284,7 +284,7 @@ def plot_variable_importance(model, feature_names: List[str]) -> None:
     fig = px.bar(importance_df, x='Variable', y='Importancia', color='Coeficiente',
                  color_continuous_scale='RdBu', title="Importancia de variables")
     fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key=key)
 
 
 def main() -> None:
@@ -420,7 +420,6 @@ def main() -> None:
     # Contenido principal
     st.subheader(f"Especie seleccionada: {selected_common_name}")
         
-    
     # Resultados del modelo logístico para la especie seleccionada
     st.markdown("### Modelo logístico general (importancia de variables y métricas)")
     
@@ -439,8 +438,8 @@ def main() -> None:
             logistic_feature_names = available_vars
     
         # Importancia de variables (coeficientes) usando las variables del modelo
-        plot_variable_importance(logistic_model, logistic_feature_names)
-
+        # Mostrar la importancia de las variables para el modelo general
+        plot_variable_importance(logistic_model, logistic_feature_names, key=f"importance_{selected_common_name}")
         species_df = df[df['COMMON NAME'] == selected_common_name]
 
         # Crear la columna 'PRESENCIA' si no existe en el DataFrame filtrado
