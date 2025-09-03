@@ -441,7 +441,7 @@ def main() -> None:
         # Importancia de variables (coeficientes) usando las variables del modelo
         plot_variable_importance(logistic_model, logistic_feature_names)
 
-         species_df = df[df['COMMON NAME'] = selected_common_name]
+        species_df = df[df['COMMON NAME'] = selected_common_name]
 
         # Crear la columna 'PRESENCIA' si no existe en el DataFrame filtrado
         if 'PRESENCIA' not in species_df.columns:
