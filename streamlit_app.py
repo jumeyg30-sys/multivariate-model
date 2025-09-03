@@ -452,7 +452,7 @@ def main() -> None:
     
         if not X_spec.empty and not y_spec.empty:
             # Mostrar la importancia de las variables filtrada para la especie
-            plot_variable_importance(logistic_model, logistic_feature_names)
+            plot_variable_importance(logistic_model, logistic_feature_names, key=f"importance_filtered_{selected_common_name}")
     
             # Calcular las métricas para la especie seleccionada (Exactitud y AUC)
             acc_spec, auc_spec = compute_model_metrics(logistic_model, X_spec, y_spec)
