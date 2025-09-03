@@ -443,18 +443,22 @@ def main() -> None:
         
         # Filtrar datos por especie
         species_df = filter_by_species(df, selected_common_name)
+        
         # Crear la columna 'PRESENCIA' si no existe en el DataFrame filtrado
         if 'PRESENCIA' not in species_df.columns:
             species_df['PRESENCIA'] = species_df['AVISTAMIENTOS'].apply(lambda x: 1 if x > 0 else 0)
-    
-        # Verificar si los datos están disponibles
+        
+        # Asegurarse de que las columnas necesarias existan
+        logistic_feature_names = ['PRECTOTCORR', 'PS', 'RH2M', 'T2M', 'T2MWET', 'T2M_MAX', 'TS', 'WS10M']  # Modificar si es necesario
+        
+        # Filtrar datos para el modelo (X_spec) y las etiquetas (y_spec)
         X_spec = species_df[logistic_feature_names].dropna()  # Variables climáticas
         y_spec = species_df.loc[X_spec.index, 'PRESENCIA']  # Etiqueta 'PRESENCIA'
-    
+        
         if not X_spec.empty and not y_spec.empty:
             # Mostrar la importancia de las variables filtrada para la especie
             plot_variable_importance(logistic_model, logistic_feature_names, key=f"importance_filtered_{selected_common_name}")
-    
+        
             # Calcular las métricas para la especie seleccionada (Exactitud y AUC)
             acc_spec, auc_spec = compute_model_metrics(logistic_model, X_spec, y_spec)
             st.write(f"Exactitud para la especie seleccionada: {acc_spec:.2f}")
