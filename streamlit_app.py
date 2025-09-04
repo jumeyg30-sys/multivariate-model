@@ -339,7 +339,7 @@ def plot_variable_importance(model, feature_names: List[str], key: str) -> None:
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
     st.markdown(
-        '<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>',
+        '<h1 class ="main-header"> Observa, Conoce y Protege: La Avifauna de ESPOL.</h1>',
         unsafe_allow_html=True
     )
     
@@ -365,7 +365,7 @@ def main() -> None:
     ].iloc[0]
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
 
-    st.markdown("🐦 ESTADÍSTICA DE AVES")
+    st.markdown("Estadísticas importantes que te gustaría saber.")
 
     # Definimos las columnas
     col1, col2, col3, col4 = st.columns(4)
