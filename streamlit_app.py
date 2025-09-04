@@ -503,6 +503,50 @@ def main() -> None:
             unsafe_allow_html=True
         )
 
+
+     # Sección: Variables climáticas que más afectan a la especie
+    st.markdown("### Variables climáticas que más afectan a la especie")
+    if not species_df.empty:
+        climate_vars_list = list(climate_variable_names.keys())
+        correlation_dict = {}
+        for var in climate_vars_list:
+            # Asegurar que la variable exista y que el log de avistamientos tenga valores
+            if var in species_df.columns and 'LOG_AVISTAMIENTOS' in species_df.columns:
+                corr_value = species_df[var].corr(species_df['LOG_AVISTAMIENTOS'])
+                if pd.notna(corr_value):
+                    correlation_dict[var] = corr_value
+    
+        if correlation_dict:
+            corr_df = (
+                pd.DataFrame.from_dict(correlation_dict, orient='index', columns=['Correlation'])
+                .assign(AbsCorr=lambda df_: df_['Correlation'].abs())
+                .sort_values('AbsCorr', ascending=False)
+                .reset_index()
+                .rename(columns={'index': 'Variable'})
+            )
+            fig_corr = px.bar(
+                corr_df,
+                x='Variable',
+                y='AbsCorr',
+                title=f"Impacto de variables climáticas en {selected_common_name}",
+                labels={'AbsCorr': '|Correlación|'}
+            )
+            fig_corr.update_layout(template="plotly_dark")
+            st.plotly_chart(fig_corr, use_container_width=True)
+        else:
+            st.markdown(
+                "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
+                "No hay suficientes datos para calcular correlaciones para esta especie."
+                "</div>",
+                unsafe_allow_html=True
+            )
+    else:
+        st.markdown(
+            "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
+            "No se encontraron datos de esta especie para calcular correlaciones."
+            "</div>",
+            unsafe_allow_html=True
+        )
     # Sección: Aves más probables por mes de avistamiento
     st.markdown("### Aves más probables por mes")
     # Opciones de meses disponibles para el filtro (incluye 'Todos')
@@ -589,49 +633,7 @@ def main() -> None:
         elif 'ALL SPECIES REPORTED' in df.columns:
             df['LOG_AVISTAMIENTOS'] = np.log10(df['ALL SPECIES REPORTED'] + 1)
 
-        # Sección: Variables climáticas que más afectan a la especie
-    st.markdown("### Variables climáticas que más afectan a la especie")
-    if not species_df.empty:
-        climate_vars_list = list(climate_variable_names.keys())
-        correlation_dict = {}
-        for var in climate_vars_list:
-            # Asegurar que la variable exista y que el log de avistamientos tenga valores
-            if var in species_df.columns and 'LOG_AVISTAMIENTOS' in species_df.columns:
-                corr_value = species_df[var].corr(species_df['LOG_AVISTAMIENTOS'])
-                if pd.notna(corr_value):
-                    correlation_dict[var] = corr_value
-    
-        if correlation_dict:
-            corr_df = (
-                pd.DataFrame.from_dict(correlation_dict, orient='index', columns=['Correlation'])
-                .assign(AbsCorr=lambda df_: df_['Correlation'].abs())
-                .sort_values('AbsCorr', ascending=False)
-                .reset_index()
-                .rename(columns={'index': 'Variable'})
-            )
-            fig_corr = px.bar(
-                corr_df,
-                x='Variable',
-                y='AbsCorr',
-                title=f"Impacto de variables climáticas en {selected_common_name}",
-                labels={'AbsCorr': '|Correlación|'}
-            )
-            fig_corr.update_layout(template="plotly_dark")
-            st.plotly_chart(fig_corr, use_container_width=True)
-        else:
-            st.markdown(
-                "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-                "No hay suficientes datos para calcular correlaciones para esta especie."
-                "</div>",
-                unsafe_allow_html=True
-            )
-    else:
-        st.markdown(
-            "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-            "No se encontraron datos de esta especie para calcular correlaciones."
-            "</div>",
-            unsafe_allow_html=True
-        )
+       
     # Top N de avistamientos (fuera del filtro de especie)
     st.sidebar.markdown("---")
     max_n = min(10, species_mapping.shape[0])  # limite de especies a mostrar
