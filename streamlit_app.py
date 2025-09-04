@@ -19,46 +19,63 @@ from PIL import Image
 
 import streamlit as st
 
-# Ruta de la imagen del fondo
-background_image_path = "fondo_espol.jpg"  # Asegúrate de que esta imagen esté en el directorio correcto
 
-# Estilos CSS para crear el fondo con la capa de color morado
-background_css = f"""
-    <style>
-        body {{
-            background-color: white;  /* Asegura que el fondo blanco sea sobrepasado */
-        }}
-        
-        .main {{
-            background-image: url('{background_image_path}');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            min-height: 100vh;
-        }}
-        
-        .main::before {{
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(128, 0, 128, 0.6);  /* Morado atenuado */
-            z-index: -1;  /* Asegura que la capa de color esté por debajo del contenido */
-        }}
-    </style>
+import streamlit as st
+from PIL import Image
+import base64
+
+# Ruta de tu imagen de fondo (ajusta el nombre y la ubicación según sea necesario)
+fondo_path = "fondo_espol.jpeg"
+
+# Cargar la imagen y obtener su representación en base64
+def get_base64_image(path):
+    with open(path, "rb") as file:
+        data = file.read()
+    return base64.b64encode(data).decode()
+
+# Obtener la imagen en base64
+fondo_base64 = get_base64_image(fondo_path)
+
+# Construir el CSS con la imagen y la capa morada atenuada
+css = f"""
+<style>
+/* Asegura que la aplicación tenga posición relativa */
+.stApp {{
+    position: relative;
+    overflow: hidden;
+}}
+
+/* Coloca la imagen de fondo */
+.stApp::after {{
+    content: "";
+    background-image: url("data:image/jpg;base64,{fondo_base64}");
+    background-size: cover;
+    background-position: center;
+    opacity: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+    z-index: -2;  /* Debajo del overlay morado */
+}}
+
+/* Capa morada atenuada encima de la imagen */
+.stApp::before {{
+    content: "";
+    background: rgba(128, 0, 128, 0.4);  /* Morado con 40% de opacidad */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+    z-index: -1;  /* Por encima de la imagen pero detrás del contenido */
+}}
+</style>
 """
 
-# Incluir el estilo en el archivo Streamlit
-st.markdown(background_css, unsafe_allow_html=True)
-
-# Ahora tu contenido
-st.title("¡Bienvenido a mi Dashboard!")
-st.write("Aquí está el contenido del dashboard, que se muestra sobre el fondo con capa morada.")
-
-
-
+# Inyectar el CSS en la aplicación
+st.markdown(css, unsafe_allow_html=True)
 
 
 # Nombres de los archivos de imágenes que se utilizarán en el dashboard.
