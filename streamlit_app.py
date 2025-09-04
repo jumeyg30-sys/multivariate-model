@@ -556,6 +556,8 @@ def main() -> None:
         </div>
         """,
         unsafe_allow_html=True
+    )
+    
     
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
