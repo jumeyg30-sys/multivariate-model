@@ -153,64 +153,43 @@ def load_logistic_model(model_path: Path):
     else:
         return None
 
-
 def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
-    """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
+    """Grafica series de tiempo para las variables seleccionadas.
 
     Args:
-        df_climate: DataFrame de datos climáticos completos (sin filtrar por especie).
-        variables: Lista de variables climáticas a mostrar.
+        df_climate: DataFrame completo (sin filtrar por especie).
+        variables: Lista de variables climáticas a graficar.
 
-    Se agrupan los datos por ``YEAR`` y se calcula la media de cada
-    variable climática. Cada variable se grafica en la misma figura para facilitar la
-    comparación temporal, y se añade una línea de tendencia.
+    La función agrupa por YEAR_MONTH (si existe) y calcula la media por mes;
+    en su defecto agrupa por YEAR. No se añaden líneas de tendencia.
     """
     if not variables:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Asegurarse de que 'YEAR' en df_climate esté presente como tipo entero
-    if df_climate['YEAR'].dtype != 'int':
+    # Agrupar por YEAR_MONTH si existe la columna
+    if 'YEAR_MONTH' in df_climate.columns:
         try:
+            df_climate['YEAR_MONTH'] = pd.to_datetime(df_climate['YEAR_MONTH'], errors='coerce')
+        except Exception:
+            pass
+        grouped = df_climate.groupby('YEAR_MONTH')[variables].mean().reset_index()
+        x_vals = grouped['YEAR_MONTH']
+    else:
+        # Fallback a YEAR
+        if df_climate['YEAR'].dtype != int:
             df_climate['YEAR'] = df_climate['YEAR'].astype(int)
-        except Exception:
-            st.warning("No se pudo convertir la columna 'YEAR' a tipo entero.")
-            return
+        grouped = df_climate.groupby('YEAR')[variables].mean().reset_index()
+        x_vals = grouped['YEAR']
 
-    # Agrupar los datos climáticos por 'YEAR' y calcular la media de cada variable climática
-    grouped_climate = df_climate.groupby('YEAR')[variables].mean().reset_index()
-
-    # Crear el gráfico de las variables climáticas con sus líneas de tendencia
     fig = go.Figure()
-
-    # Graficar las variables climáticas y sus líneas de tendencia
     for var in variables:
-        # Obtener los datos de la variable climática
-        x = grouped_climate['YEAR']
-        y = grouped_climate[var]
-
-        # Calcular la línea de tendencia utilizando regresión lineal
-        try:
-            slope, intercept = np.polyfit(x, y, 1)
-        except Exception:
-            slope, intercept = 0, y.mean()
-        trendline = slope * x + intercept
-
-        # Graficar la serie de tiempo de la variable climática
-        fig.add_trace(go.Scatter(x=grouped_climate['YEAR'], y=grouped_climate[var],
-                                 mode='lines', name=f"{var} - Serie de Tiempo"))
-
-        # Graficar la línea de tendencia
-        fig.add_trace(go.Scatter(x=grouped_climate['YEAR'], y=trendline,
-                                 mode='lines', name=f"{var} - Tendencia", line=dict(dash='dash')))
-
-    # Ajustar el diseño del gráfico
-    fig.update_layout(title="",
-                      xaxis_title="Año",
-                      yaxis_title="Valor",
-                      template="plotly_dark")
-
-    # Mostrar el gráfico
+        fig.add_trace(go.Scatter(x=x_vals, y=grouped[var], mode='lines', name=var))
+    fig.update_layout(
+        xaxis_title="Año/mes",
+        yaxis_title="Valor",
+        template="plotly_dark"
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
