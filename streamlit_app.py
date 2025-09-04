@@ -21,7 +21,7 @@ from PIL import Image
 # Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
 
 # Ruta de la imagen del banner
-banner_image_path = "espol-ecuador.jpg"  # Asegúrate de que esta imagen esté en el mismo directorio
+banner_image_path = "espol-ecuador.jpeg"  # Asegúrate de que esta imagen esté en el mismo directorio
 
 # Cargar la imagen
 BANNER_IMAGE= Image.open(banner_image_path)
@@ -32,7 +32,7 @@ BANNER_IMAGE = BANNER_IMAGE.resize((1600, 300))
 # Mostrar la imagen ajustada
 st.image(BANNER_IMAGE, use_column_width=True)
 
-MODEL_IMAGE_FILES = ["model1.png", "model2.png", "model3.png"]  # Imágenes de los modelos predictivos
+MODEL_IMAGE_FILES = ["Saffron.png", "Blue.png", "Ecuadorian.png"]  # Imágenes de los modelos predictivos
 MODEL_IMAGE_DESCRIPTIONS = [
     "Descripción del resultado del modelo 1.",
     "Descripción del resultado del modelo 2.",
