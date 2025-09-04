@@ -42,31 +42,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# A continuación, tu contenido habitual del dashboard
-st.title("Título de tu dashboard")
-# Aquí irían tus filtros, gráficos, tablas, etc.
-# Por ejemplo:
-st.write("Contenido y gráficos se mantendrán visibles.")
-
-
 
 # Nombres de los archivos de imágenes que se utilizarán en el dashboard.
 # Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
-
-# Ruta de la imagen del banner
-banner_image_path = "lago.jpeg"  # Asegúrate de que esta imagen esté en el directorio correcto
-
-# Verificar si la imagen existe antes de cargarla
-if Path(banner_image_path).exists():
-    # Cargar la imagen
-    BANNER_IMAGE = Image.open(banner_image_path)
-    # Ajustar el tamaño de la imagen (1600px de ancho y 300px de alto)
-    BANNER_IMAGE = BANNER_IMAGE.resize((1600, 300))
-    # Mostrar la imagen
-    st.image(BANNER_IMAGE, use_column_width=True)
-else:
-    # Si no se encuentra la imagen, mostrar un mensaje de error
-    st.error(f"No se encontró la imagen en la ruta '{banner_image_path}'. Asegúrate de que el archivo esté en el directorio correcto.")
 
 
 MODEL_IMAGE_FILES = ["saffron2.png", "ecuadorian2.png", "blue2.png"]  # Imágenes de los modelos predictivos
