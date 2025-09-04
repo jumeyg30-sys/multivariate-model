@@ -519,25 +519,6 @@ def main() -> None:
     logistic_model_path = Path('model_logistic.pkl')
     logistic_model = load_logistic_model(logistic_model_path)
 
-    # Contenido principal
-    st.subheader(f"Especie seleccionada: {selected_common_name}")
-
-    # Sección de modelos predictivos: muestra las imágenes y descripciones definidas arriba.
-    st.markdown("### Modelos predictivos")
-    for img_file, desc in zip(MODEL_IMAGE_FILES, MODEL_IMAGE_DESCRIPTIONS):
-        # Utilizar columnas para poner cada imagen con su tarjeta informativa
-        col_img, col_info = st.columns([3, 2])
-        with col_img:
-            if Path(img_file).exists():
-                st.image(img_file, use_column_width=True)
-            else:
-                st.warning(
-                    f"No se encontró la imagen '{img_file}'. "
-                    "Asegúrate de colocar el archivo en la misma carpeta del script o actualiza la ruta en MODEL_IMAGE_FILES."
-                )
-        with col_info:
-            st.info(desc)
-
     st.info("""
     **Instrucciones para leer el gráfico:**
     - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
@@ -552,40 +533,25 @@ def main() -> None:
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
     plot_top_n_birds(df, n_top)
 
-    # Comparación de modelos
     st.markdown("## Comparación de modelos por especie")
     with st.expander("Ver comparación de modelos"):
-        # Preparar variable objetivo (presencia/no presencia) a partir de AVISTAMIENTOS
-        if 'AVISTAMIENTOS' in df.columns:
-            df['PRESENCIA'] = (df['AVISTAMIENTOS'] > 0).astype(int)
-        else:
-            st.warning("No se encuentra la columna AVISTAMIENTOS para construir la variable objetivo.")
-            # salimos del expander
-        # Métricas y curvas para cada modelo cargado
-        for key, model in models.items():
-            st.markdown(f"### {key}")
-            if model is None:
-                st.info("Modelo no disponible.")
-                continue
-            # Filtrar datos para la especie del modelo
-            species_name_model = key
-            # Se busca la fila correspondiente en species_mapping
-            try:
-                common_name_model = species_mapping.loc[
-                    species_mapping['COMMON NAME'].str.contains(
-                        species_name_model.split()[-1], case=False
-                    ),
-                    'COMMON NAME'
-                ].iloc[0]
-            except Exception:
-                # Si no se encuentra coincidencia, se usan todos los datos
-                common_name_model = None
-            if common_name_model:
-                df_model = filter_by_species(df, common_name_model)
-            else:
-                df_model = df
-            # Aquí se podrían agregar métricas o visualizaciones específicas si fuera necesario
-
+        for img_file, desc in zip(MODEL_IMAGE_FILES, MODEL_IMAGE_DESCRIPTIONS):
+            # Utilizar columnas para poner cada imagen con su tarjeta informativa
+            col_img, col_info = st.columns([3, 2])
+            with col_img:
+                if Path(img_file).exists():
+                    st.image(img_file, use_container_width=True)
+    
+                else:
+                    st.warning(
+                        f"No se encontró la imagen '{img_file}'. "
+                        "Asegúrate de colocar el archivo en la misma carpeta del script o actualiza la ruta en MODEL_IMAGE_FILES."
+                    )
+            with col_info:
+                st.info(desc)
+    
+    
+        
     st.markdown("---")
     st.caption("Aplicación desarrollada para visualizar avistamientos y variables climáticas de aves.")
 
