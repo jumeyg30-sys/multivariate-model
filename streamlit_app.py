@@ -17,14 +17,18 @@ import streamlit as st
 from PIL import Image
 
 
-# Nombres de los archivos de imágenes que se utilizarán en el dashboard.
-# Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
+import streamlit as st
 
-background_image_path = "fondo_espol.jpg"  # Asegúrate de que esta imagen esté en el mismo directorio
+# Ruta de la imagen del fondo
+background_image_path = "fondo_espol.jpg"  # Asegúrate de que esta imagen esté en el directorio correcto
 
 # Estilos CSS para crear el fondo con la capa de color morado
 background_css = f"""
     <style>
+        body {{
+            background-color: white;  /* Asegura que el fondo blanco sea sobrepasado */
+        }}
+        
         .main {{
             background-image: url('{background_image_path}');
             background-size: cover;
@@ -48,6 +52,17 @@ background_css = f"""
 
 # Incluir el estilo en el archivo Streamlit
 st.markdown(background_css, unsafe_allow_html=True)
+
+# Ahora tu contenido
+st.title("¡Bienvenido a mi Dashboard!")
+st.write("Aquí está el contenido del dashboard, que se muestra sobre el fondo con capa morada.")
+
+
+
+
+
+# Nombres de los archivos de imágenes que se utilizarán en el dashboard.
+# Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
 
 # Ruta de la imagen del banner
 banner_image_path = "lago.jpeg"  # Asegúrate de que esta imagen esté en el directorio correcto
