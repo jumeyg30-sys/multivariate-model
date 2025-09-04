@@ -153,26 +153,27 @@ def load_logistic_model(model_path: Path):
     else:
         return None
 
+
+import numpy as np  # Asegúrate de tener importado numpy en tu script
+
 def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
-    """Grafica series de tiempo para las variables seleccionadas.
+    """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
     Args:
-        df_climate: DataFrame completo (sin filtrar por especie).
-        variables: Lista de variables climáticas a graficar.
+        df_climate: DataFrame de datos climáticos completos (sin filtrar por especie).
+        variables: Lista de variables climáticas a mostrar.
 
-    La función agrupa por YEAR_MONTH (si existe) y calcula la media por mes;
-    en su defecto agrupa por YEAR. No se añaden líneas de tendencia.
+    La función agrupa por YEAR_MONTH (si existe) y calcula la media por mes; 
+    en su defecto agrupa por YEAR. Para cada variable se dibuja la serie de 
+    tiempo y su línea de tendencia calculada mediante regresión lineal.
     """
     if not variables:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
         return
 
-    # Agrupar por YEAR_MONTH si existe la columna
+    # Agrupar por YEAR_MONTH si existe, si no por YEAR
     if 'YEAR_MONTH' in df_climate.columns:
-        try:
-            df_climate['YEAR_MONTH'] = pd.to_datetime(df_climate['YEAR_MONTH'], errors='coerce')
-        except Exception:
-            pass
+        df_climate['YEAR_MONTH'] = pd.to_datetime(df_climate['YEAR_MONTH'], errors='coerce')
         grouped = df_climate.groupby('YEAR_MONTH')[variables].mean().reset_index()
         x_vals = grouped['YEAR_MONTH']
     else:
@@ -183,8 +184,37 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
         x_vals = grouped['YEAR']
 
     fig = go.Figure()
+    # Crear un índice numérico para el eje x (necesario para la regresión)
+    x_numeric = np.arange(len(x_vals))
+
     for var in variables:
-        fig.add_trace(go.Scatter(x=x_vals, y=grouped[var], mode='lines', name=var))
+        y_vals = grouped[var]
+        # Serie de tiempo principal
+        fig.add_trace(
+            go.Scatter(
+                x=x_vals,
+                y=y_vals,
+                mode='lines',
+                name=f"{var} - Serie de Tiempo"
+            )
+        )
+
+        # Calcular la línea de tendencia si hay al menos dos datos válidos
+        mask = y_vals.notna()
+        if mask.sum() >= 2:
+            # Ajustar regresión lineal sobre los datos válidos
+            slope, intercept = np.polyfit(x_numeric[mask], y_vals[mask], 1)
+            trend = slope * x_numeric + intercept
+            fig.add_trace(
+                go.Scatter(
+                    x=x_vals,
+                    y=trend,
+                    mode='lines',
+                    name=f"{var} - Tendencia",
+                    line=dict(dash='dash')  # Línea discontinua para distinguir la tendencia
+                )
+            )
+
     fig.update_layout(
         xaxis_title="Año/mes",
         yaxis_title="Valor",
