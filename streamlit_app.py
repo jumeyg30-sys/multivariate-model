@@ -810,6 +810,6 @@ def main() -> None:
     st.markdown("---")
     st.caption("Aplicación desarrollada para visualizar avistamientos y variables climáticas de aves.")
 
-if __name__ == '__main__':if __name__ == '__main__':
+if __name__ == '__main__':
     main()
     main()
