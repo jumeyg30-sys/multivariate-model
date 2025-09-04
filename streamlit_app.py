@@ -50,9 +50,9 @@ st.markdown(
 
 MODEL_IMAGE_FILES = ["saffron2.png", "ecuadorian2.png", "blue2.png"]  # Imágenes de los modelos predictivos
 MODEL_IMAGE_DESCRIPTIONS = [
-    "El modelo predice que en 2025 veremos una cantidad de avistamientos de Saffron Finch dentro de un rango de valores. Se espera que el número de avistamientos sea similar o ligeramente mayor que en años anteriores. La línea azul muestra la tendencia general, y las sombras indican un margen de incertidumbre sobre cuántos más avistamientos podría haber. En resumen, podríamos ver alrededor de 100 avistamientos de Saffron Finch en 2025, con un pequeño aumento en comparación con los años previos.",
-    "El modelo predice que en 2025 los avistamientos del Ecuadorian Ground Dove estarán dentro de un rango de valores, con una ligera tendencia a la baja en comparación con los años anteriores. Aunque hay algunas fluctuaciones, la línea azul indica que la cantidad de avistamientos podría estabilizarse en un nivel bajo.",
-    "El modelo predice que se espera que los avistamientos de la especie Blue Gray estén dentro de un rango específico. El modelo muestra que los avistamientos podrían estabilizarse en niveles bajos, con fluctuaciones a lo largo del año. Aunque el número de avistamientos podría variar, no se anticipa un aumento significativo, y las predicciones sugieren una tendencia a la baja o al menos una estabilización en los valores cercanos a cero."
+    "Se espera que el número de avistamientos sea similar o ligeramente mayor que en años anteriores. En resumen, podríamos ver alrededor de 100 avistamientos de Saffron Finch en 2025, con un pequeño aumento en comparación con los años previos.",
+    "El modelo predice que en 2025 los avistamientos del Ecuadorian Ground Dove tendrán ligera tendencia a bajar en comparación con los años anteriores. Se indica que la cantidad de avistamientos podría estabilizarse en un nivel bajo.",
+    "El modelo predice que se espera que los avistamientos de la especie Blue Grays podrían estabilizarse en niveles bajos, con fluctuaciones a lo largo del año. No se anticipa un aumento significativo."
 ]
 
 @st.cache_data(show_spinner=True)
@@ -448,13 +448,23 @@ def main() -> None:
                 mes_mas_frecuente = month_map.get(int(top_month), str(top_month))
             except Exception:
                 mes_mas_frecuente = str(top_month)
-
-    # Mostrar el mes con más avistamientos en un apartado destacado
+                
+        # Mostrar el mes con más avistamientos en un apartado destacado
     if mes_mas_frecuente:
         st.markdown("### 📅 Mes de mayor avistamiento")
-        st.success(
-            f"Según los registros, el mes con mayor número de avistamientos de **{selected_common_name}** "
-            f"es **{mes_mas_frecuente}**."
+        # Tarjeta morada para el mensaje de mayor avistamiento
+        st.markdown(
+            f"""
+            <div style="background-color:#6a1b9a;
+                        color:white;
+                        padding:15px;
+                        border-radius:8px;
+                        margin:10px 0;">
+                Según los registros, el mes con mayor número de avistamientos de <strong>{selected_common_name}</strong>
+                es <strong>{mes_mas_frecuente}</strong>.
+            </div>
+            """,
+            unsafe_allow_html=True
         )
         # Mostrar un gráfico de barras de avistamientos por mes para la especie
         fig_month = px.bar(
@@ -469,8 +479,18 @@ def main() -> None:
         )
         st.plotly_chart(fig_month, use_container_width=True)
     else:
-        st.info(
-            "No hay datos suficientes para determinar un mes de mayor avistamiento para esta especie."
+        # Tarjeta morada para indicar que no hay datos suficientes
+        st.markdown(
+            """
+            <div style="background-color:#6a1b9a;
+                        color:white;
+                        padding:15px;
+                        border-radius:8px;
+                        margin:10px 0;">
+                No hay datos suficientes para determinar un mes de mayor avistamiento para esta especie.
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
     # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
@@ -519,12 +539,24 @@ def main() -> None:
     logistic_model_path = Path('model_logistic.pkl')
     logistic_model = load_logistic_model(logistic_model_path)
 
-    st.info("""
-    **Instrucciones para leer el gráfico:**
-    - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
-    - **Líneas continuas**: Muestran la evolución de la variable a lo largo del tiempo.
-    - **Líneas discontinuas**: Representan la tendencia general (línea de regresión).
-    """)
+        # Mostrar instrucciones de lectura del gráfico en una tarjeta morada personalizada
+    st.markdown(
+        """
+        <div style="background-color:#6a1b9a;
+                    color:white;
+                    padding:15px;
+                    border-radius:8px;
+                    margin:10px 0;">
+            <strong>Instrucciones para leer el gráfico:</strong>
+            <ul style="margin-top:8px;">
+                <li>El gráfico muestra la <strong>serie de tiempo</strong> de la variable climática seleccionada.</li>
+                <li><strong>Líneas continuas</strong>: Muestran la evolución de la variable a lo largo del tiempo.</li>
+                <li><strong>Líneas discontinuas</strong>: Representan la tendencia general (línea de regresión).</li>
+            </ul>
+        </div>
+        """,
+        unsafe_allow_html=True
+    
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
     plot_time_series(df, selected_vars_time_siglas)
