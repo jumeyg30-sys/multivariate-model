@@ -561,42 +561,55 @@ def main() -> None:
         var for var in climate_vars if climate_variable_names[var] in selected_vars_time
     ]
 
-            # Sección: Variables climáticas que más afectan a la especie
-    st.markdown("### Variables climáticas que más afectan a la especie")
+
     
+    # Asegurar la existencia de LOG_AVISTAMIENTOS para cálculos de correlación
+    if 'LOG_AVISTAMIENTOS' not in df.columns:
+        if 'AVISTAMIENTOS' in df.columns:
+            df['LOG_AVISTAMIENTOS'] = np.log10(df['AVISTAMIENTOS'] + 1)
+        elif 'ALL SPECIES REPORTED' in df.columns:
+            df['LOG_AVISTAMIENTOS'] = np.log10(df['ALL SPECIES REPORTED'] + 1)
+
+        # Sección: Variables climáticas que más afectan a la especie
+    st.markdown("### Variables climáticas que más afectan a la especie")
     if not species_df.empty:
         climate_vars_list = list(climate_variable_names.keys())
         correlation_dict = {}
         for var in climate_vars_list:
+            # Asegurar que la variable exista y que el log de avistamientos tenga valores
             if var in species_df.columns and 'LOG_AVISTAMIENTOS' in species_df.columns:
                 corr_value = species_df[var].corr(species_df['LOG_AVISTAMIENTOS'])
-                if not pd.isna(corr_value):
+                if pd.notna(corr_value):
                     correlation_dict[var] = corr_value
     
         if correlation_dict:
-            corr_df = pd.DataFrame.from_dict(correlation_dict, orient='index', columns=['Correlation'])
-            corr_df['AbsCorr'] = corr_df['Correlation'].abs()
-            corr_df = corr_df.sort_values('AbsCorr', ascending=False).reset_index()
-            corr_df['Variable'] = corr_df['index']
-    
-            fig_corr = px.bar(
-                corr_df, x='Variable', y='AbsCorr',
-                title=f"Impacto de variables climáticas en {selected_common_name}",
-                labels={'AbsCorr':'|Correlación|'}
+            corr_df = (
+                pd.DataFrame.from_dict(correlation_dict, orient='index', columns=['Correlation'])
+                .assign(AbsCorr=lambda df_: df_['Correlation'].abs())
+                .sort_values('AbsCorr', ascending=False)
+                .reset_index()
+                .rename(columns={'index': 'Variable'})
             )
-            fig_corr.update_layout(xaxis_title="Variable", yaxis_title="|Correlación|")
+            fig_corr = px.bar(
+                corr_df,
+                x='Variable',
+                y='AbsCorr',
+                title=f"Impacto de variables climáticas en {selected_common_name}",
+                labels={'AbsCorr': '|Correlación|'}
+            )
+            fig_corr.update_layout(template="plotly_dark")
             st.plotly_chart(fig_corr, use_container_width=True)
         else:
             st.markdown(
                 "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-                "No se pudieron calcular correlaciones para las variables climáticas de esta especie."
+                "No hay suficientes datos para calcular correlaciones para esta especie."
                 "</div>",
                 unsafe_allow_html=True
             )
     else:
         st.markdown(
             "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-            "No se encontraron datos de esta especie para calcular correlaciones de variables climáticas."
+            "No se encontraron datos de esta especie para calcular correlaciones."
             "</div>",
             unsafe_allow_html=True
         )
