@@ -434,6 +434,10 @@ def main() -> None:
         elif 'ALL SPECIES REPORTED' in df.columns:
             df['LOG_AVISTAMIENTOS'] = np.log10(df['ALL SPECIES REPORTED'] + 1)
 
+    # Excluir especies que no se desean mostrar en la lista, por ejemplo American Redstart
+    # Esto evita que aparezca en la lista de selección y en las estadísticas
+    df = df[df['COMMON NAME'] != 'American Redstart']
+
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
 
@@ -462,8 +466,8 @@ def main() -> None:
         <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
-            <h4 style="margin:0; font-size: 22px;">🦜 Total de Aves</h4>
-            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
+            <h4 style="margin:0; font-size:22px; line-height:1.2; white-space:nowrap;">🦜 Total de Aves</h4>
+            <h3 style="margin:0; font-size:24px; line-height:1.2;">{aves_totales}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
@@ -474,8 +478,8 @@ def main() -> None:
         <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
-            <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
-            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales_especie}</h3>
+            <h4 style="margin:0; font-size:22px; line-height:1.2; white-space:nowrap;">🐤 Total de {selected_common_name}</h4>
+            <h3 style="margin:0; font-size:24px; line-height:1.2;">{aves_totales_especie}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
@@ -486,8 +490,8 @@ def main() -> None:
         <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
-            <h4 style="margin:0; font-size:22px;">Riesgo de Extinción</h4>
-            <h3 style="margin:5px 0; font-size: 24px;">{categoria.iloc[0]}</h3>
+            <h4 style="margin:0; font-size:22px; line-height:1.2; white-space:nowrap;">Riesgo de Extinción</h4>
+            <h3 style="margin:0; font-size:24px; line-height:1.2;">{categoria.iloc[0]}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
@@ -499,8 +503,8 @@ def main() -> None:
         <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
-            <h4 style="margin:0; font-size:22px;">Distribución Geográfica</h4>
-            <h3 style="margin:5px 0; font-size: 24px;">{endemica_texto.iloc[0]}</h3>
+            <h4 style="margin:0; font-size:22px; line-height:1.2; white-space:nowrap;">Distribución Geográfica</h4>
+            <h3 style="margin:0; font-size:24px; line-height:1.2;">{endemica_texto.iloc[0]}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
@@ -544,23 +548,39 @@ def main() -> None:
             unsafe_allow_html=True
         )
         # Gráfico de barras de avistamientos por mes
+        # Convertir la columna MONTH a nombres de mes para la visualización
+        month_counts_df = month_counts_species.reset_index()
+        # Asegurarse de que el índice de mes sea numérico para evitar errores
+        month_counts_df['MONTH'] = pd.to_numeric(month_counts_df['MONTH'], errors='coerce')
+        # Añadir columna con el nombre del mes utilizando el mapeo definido anteriormente
+        month_counts_df['MonthName'] = month_counts_df['MONTH'].map(month_map)
+        # El nombre de la columna de avistamientos depende de cómo se creó la serie (AVISTAMIENTOS o ALL SPECIES REPORTED)
+        y_col = month_counts_df.columns[1]
         fig_month = px.bar(
-            month_counts_species.reset_index(),
-            x='MONTH',
-            y=month_counts_species.name,
+            month_counts_df,
+            x='MonthName',
+            y=y_col,
             title=f"Avistamientos mensuales de {selected_common_name}",
-            color='MONTH',
+            color='MonthName',
             color_discrete_sequence=COLOR_PALETTE
         )
+        # Ordenar las categorías del eje X de acuerdo al orden cronológico de los meses
         fig_month.update_layout(
-            xaxis_title="Mes",
-            yaxis_title="Total de avistamientos",
+            xaxis=dict(
+                title="Mes",
+                type='category',
+                categoryorder='array',
+                categoryarray=[month_map[m] for m in range(1, 13)],
+                color='white'
+            ),
+            yaxis=dict(
+                title="Total de avistamientos",
+                color='white'
+            ),
             template=None,
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='white'),
-            xaxis=dict(color='white'),
-            yaxis=dict(color='white')
+            font=dict(color='white')
         )
         st.plotly_chart(fig_month, use_container_width=True)
     else:
@@ -788,7 +808,8 @@ def main() -> None:
                 )
 
     st.markdown("---")
-    st.caption("Aplicación desarrollada por Nicolás Bastidas y Stefany Godoy con la ayuda de nuestra tutora Phd. Mariela González Narváez para visualizar avistamientos y variables climáticas de aves.")
+    st.caption("Aplicación desarrollada para visualizar avistamientos y variables climáticas de aves.")
 
-if __name__ == '__main__':
+if __name__ == '__main__':if __name__ == '__main__':
+    main()
     main()
