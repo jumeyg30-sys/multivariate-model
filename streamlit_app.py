@@ -533,7 +533,35 @@ def main() -> None:
             unsafe_allow_html=True
         )
 
-        # Sección: Variables climáticas que más afectan a la especie
+
+    # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
+    climate_variable_names = {
+        'PRECTOTCORR': 'Precipitación total corregida',
+        'PS': 'Presión en superficie',
+        'RH2M': 'Humedad relativa',
+        'T2M': 'Temperatura a 2 metros',
+        'T2MWET': 'Temperatura media a 2 metros',
+        'T2M_MAX': 'Temperatura máxima a 2 metros',
+        'TS': 'Temperatura superficial',
+        'WS10M': 'Velocidad del viento a 10 metros'
+    }
+
+    # Variables climáticas candidatas (siglas)
+    climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
+
+    # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
+    selected_vars_time = st.sidebar.multiselect(
+        "Variables climáticas para series de tiempo:",
+        options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
+        default=[]
+    )
+
+    # Convertir las selecciones del usuario de vuelta a las siglas
+    selected_vars_time_siglas = [
+        var for var in climate_vars if climate_variable_names[var] in selected_vars_time
+    ]
+
+            # Sección: Variables climáticas que más afectan a la especie
     st.markdown("### Variables climáticas que más afectan a la especie")
     
     if not species_df.empty:
@@ -572,35 +600,6 @@ def main() -> None:
             "</div>",
             unsafe_allow_html=True
         )
-
-    
-    # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
-    climate_variable_names = {
-        'PRECTOTCORR': 'Precipitación total corregida',
-        'PS': 'Presión en superficie',
-        'RH2M': 'Humedad relativa',
-        'T2M': 'Temperatura a 2 metros',
-        'T2MWET': 'Temperatura media a 2 metros',
-        'T2M_MAX': 'Temperatura máxima a 2 metros',
-        'TS': 'Temperatura superficial',
-        'WS10M': 'Velocidad del viento a 10 metros'
-    }
-
-    # Variables climáticas candidatas (siglas)
-    climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
-
-    # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
-    selected_vars_time = st.sidebar.multiselect(
-        "Variables climáticas para series de tiempo:",
-        options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
-        default=[]
-    )
-
-    # Convertir las selecciones del usuario de vuelta a las siglas
-    selected_vars_time_siglas = [
-        var for var in climate_vars if climate_variable_names[var] in selected_vars_time
-    ]
-
     # Top N de avistamientos (fuera del filtro de especie)
     st.sidebar.markdown("---")
     max_n = min(10, species_mapping.shape[0])  # limite de especies a mostrar
