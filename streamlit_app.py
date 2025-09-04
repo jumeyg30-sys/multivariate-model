@@ -13,27 +13,37 @@ import plotly.graph_objects as go
 from sklearn import metrics
 from sklearn.metrics import accuracy_score, roc_auc_score
 import calendar  # Para convertir números de mes a nombres
-import streamlit as st
 from PIL import Image
-import streamlit as st
 import base64
+
+# -----------------------------------------------------------------------------
+# Tema y paletas de colores
+#
+# Esta aplicación aplica un fondo con una imagen y una capa morada atenuada
+# utilizando CSS. Además, define una paleta de colores basada en tonos
+# púrpura/azulados (PuBu) para todas las gráficas para que armonicen con el
+# resto del dashboard. Las figuras de Plotly se configuran con fondos
+# transparentes y textos en color claro para resaltar sobre el fondo oscuro.
 
 # Ruta de tu imagen de fondo (ajusta el nombre y la ubicación según sea necesario)
 fondo_path = "espol_fondo.png"
 
 # Leer y codificar la imagen en base64
-with open(fondo_path, "rb") as file:
-    encoded = base64.b64encode(file.read()).decode()
+try:
+    with open(fondo_path, "rb") as file:
+        encoded = base64.b64encode(file.read()).decode()
+except FileNotFoundError:
+    encoded = ""
 
-  
-# Inyectar el CSS para el fondo con capa morada atenuada
+# Inyectar el CSS para el fondo con capa morada atenuada. Usamos un degradado
+# blanco/lila sobre la imagen para aclarar el fondo. Puedes ajustar la
+# opacidad de cada color modificando los valores del canal alfa.
 st.markdown(
     f"""
     <style>
     .stApp {{
-        /* Aplica primero la capa morada semitransparente y luego la imagen de fondo */
         background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(128, 0, 128, 0.3)),
-                          url(data:image/jpeg;base64,{encoded});
+                          url(data:image/png;base64,{encoded});
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -43,17 +53,20 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Paleta de colores para las gráficas (PuBu: azulados con tinte púrpura)
+COLOR_PALETTE = px.colors.sequential.PuBu
 
-# Nombres de los archivos de imágenes que se utilizarán en el dashboard.
-# Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
-
-
-MODEL_IMAGE_FILES = ["saffron2.png", "ecuadorian2.png", "blue2.png"]  # Imágenes de los modelos predictivos
+# Nombres de los archivos de imágenes de modelos predictivos y sus descripciones.
+MODEL_IMAGE_FILES = ["saffron2.png", "ecuadorian2.png", "blue2.png"]
 MODEL_IMAGE_DESCRIPTIONS = [
     "Se espera que el número de avistamientos sea similar o ligeramente mayor que en años anteriores. En resumen, podríamos ver alrededor de 100 avistamientos de Saffron Finch en 2025, con un pequeño aumento en comparación con los años previos.",
     "El modelo predice que en 2025 los avistamientos del Ecuadorian Ground Dove tendrán ligera tendencia a bajar en comparación con los años anteriores. Se indica que la cantidad de avistamientos podría estabilizarse en un nivel bajo.",
     "El modelo predice que se espera que los avistamientos de la especie Blue Grays podrían estabilizarse en niveles bajos, con fluctuaciones a lo largo del año. No se anticipa un aumento significativo."
 ]
+
+# -----------------------------------------------------------------------------
+# Funciones de carga de datos y modelos
+#
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
@@ -65,7 +78,6 @@ def load_dataset(zip_path: Path) -> pd.DataFrame:
     Returns:
         DataFrame con las columnas definidas en la descripción.
 
-        
     Esta función busca el primer archivo CSV dentro del ZIP y lo lee con
     ``pandas.read_csv``. Las fechas en ``YEAR_MONTH`` se convierten en
     datetime, y el campo ``MONTH`` se asegura como entero.
@@ -154,7 +166,9 @@ def load_logistic_model(model_path: Path):
         return None
 
 
-import numpy as np  # Asegúrate de tener importado numpy en tu script
+# -----------------------------------------------------------------------------
+# Funciones de visualización
+#
 
 def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
@@ -165,7 +179,9 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
 
     La función agrupa por YEAR_MONTH (si existe) y calcula la media por mes; 
     en su defecto agrupa por YEAR. Para cada variable se dibuja la serie de 
-    tiempo y su línea de tendencia calculada mediante regresión lineal.
+    tiempo y su línea de tendencia calculada mediante regresión lineal. Los
+    colores provienen de la paleta predefinida y el fondo se hace
+    transparente para que combine con el tema.
     """
     if not variables:
         st.info("Seleccione al menos una variable climática para visualizar la serie de tiempo.")
@@ -184,25 +200,26 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
         x_vals = grouped['YEAR']
 
     fig = go.Figure()
-    # Crear un índice numérico para el eje x (necesario para la regresión)
     x_numeric = np.arange(len(x_vals))
 
-    for var in variables:
+    # Iterar sobre las variables y asignar colores de la paleta
+    for idx, var in enumerate(variables):
         y_vals = grouped[var]
+        # Color para la serie y su tendencia
+        color = COLOR_PALETTE[idx % len(COLOR_PALETTE)]
         # Serie de tiempo principal
         fig.add_trace(
             go.Scatter(
                 x=x_vals,
                 y=y_vals,
                 mode='lines',
-                name=f"{var} - Serie de Tiempo"
+                name=f"{var} - Serie de Tiempo",
+                line=dict(color=color)
             )
         )
-
-        # Calcular la línea de tendencia si hay al menos dos datos válidos
+        # Calcular la línea de tendencia si hay datos suficientes
         mask = y_vals.notna()
         if mask.sum() >= 2:
-            # Ajustar regresión lineal sobre los datos válidos
             slope, intercept = np.polyfit(x_numeric[mask], y_vals[mask], 1)
             trend = slope * x_numeric + intercept
             fig.add_trace(
@@ -211,14 +228,19 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
                     y=trend,
                     mode='lines',
                     name=f"{var} - Tendencia",
-                    line=dict(dash='dash')  # Línea discontinua para distinguir la tendencia
+                    line=dict(color=color, dash='dash')
                 )
             )
 
     fig.update_layout(
         xaxis_title="Año/mes",
         yaxis_title="Valor",
-        template="plotly_dark"
+        template=None,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        xaxis=dict(color='white'),
+        yaxis=dict(color='white')
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -263,15 +285,37 @@ def plot_top_n_birds(df: pd.DataFrame, n: int) -> None:
         n: Número de especies a mostrar.
 
     Ordena las especies por su total de avistamientos y grafica las primeras
-    ``n``. Se utilizan los campos ``COMMON NAME`` y ``AVISTAMIENTOS``.
+    ``n`` usando una paleta consistente y un fondo transparente.
     """
     if 'AVISTAMIENTOS' not in df.columns:
         st.warning("No se encuentra la columna AVISTAMIENTOS en los datos.")
         return
-    agg_df = df.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().sort_values(ascending=False).head(n).reset_index()
-    fig = px.bar(agg_df, x='AVISTAMIENTOS', y='COMMON NAME', orientation='h',
-                 title=f"Top {n} especies por número de avistamientos")
-    fig.update_layout(xaxis_title="Total de avistamientos", yaxis_title="Especie")
+    agg_df = (
+        df.groupby('COMMON NAME')['AVISTAMIENTOS']
+        .sum()
+        .sort_values(ascending=False)
+        .head(n)
+        .reset_index()
+    )
+    fig = px.bar(
+        agg_df,
+        x='AVISTAMIENTOS',
+        y='COMMON NAME',
+        orientation='h',
+        title=f"Top {n} especies por número de avistamientos",
+        color='COMMON NAME',
+        color_discrete_sequence=COLOR_PALETTE
+    )
+    fig.update_layout(
+        xaxis_title="Total de avistamientos",
+        yaxis_title="Especie",
+        template=None,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        xaxis=dict(color='white'),
+        yaxis=dict(color='white')
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -293,19 +337,25 @@ def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
     if 'LOG_AVISTAMIENTOS' not in df.columns or 'MONTH' not in df.columns:
         st.warning("No se encuentran las columnas LOG_AVISTAMIENTOS o MONTH en los datos.")
         return
-
     try:
-        # Crear el boxplot con Plotly, agrupando por mes
         fig = px.box(
             df,
             x='MONTH',
             y='LOG_AVISTAMIENTOS',
             points="all",
-            title=f"Distribución mensual de avistamientos por mes"
+            title=f"Distribución mensual de avistamientos por mes",
+            color='MONTH',
+            color_discrete_sequence=COLOR_PALETTE
         )
         fig.update_layout(
             xaxis_title="Mes",
-            yaxis_title='Log10(Avistamientos + 1)'
+            yaxis_title='Log10(Avistamientos + 1)',
+            template=None,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white'),
+            xaxis=dict(color='white'),
+            yaxis=dict(color='white')
         )
         st.plotly_chart(fig, use_container_width=True)
     except Exception:
@@ -319,44 +369,70 @@ def plot_variable_importance(model, feature_names: List[str], key: str) -> None:
         model: Modelo entrenado (debe tener atributo ``coef_``).
         feature_names: Lista de nombres de las variables en el mismo orden
             en que fueron utilizadas para entrenar el modelo.
+        key: Identificador único para el gráfico (Streamlit lo usa para
+            diferenciar instancias).
 
     La importancia se calcula a partir de los coeficientes de la regresión
-    logística. Se utiliza el valor absoluto para ordenar las variables.
+    logística. Se utiliza el valor absoluto para ordenar las variables. Se
+    aplica una paleta de colores y se configura un fondo transparente.
     """
     if model is None:
         st.info("No se ha cargado un modelo para esta especie.")
         return
-
     try:
         coefs = model.coef_.ravel()
     except Exception as exc:
         st.warning(f"El modelo no contiene coeficientes accesibles: {exc}")
         return
-
     importance_df = pd.DataFrame({
         'Variable': feature_names,
         'Coeficiente': coefs,
         'Importancia': np.abs(coefs)
     }).sort_values('Importancia', ascending=False)
-
-    fig = px.bar(importance_df, x='Variable', y='Importancia', color='Coeficiente',
-                 color_continuous_scale='RdBu', title="Importancia de variables")
-    fig.update_layout(xaxis_title="Variable", yaxis_title="|Coeficiente|")
+    fig = px.bar(
+        importance_df,
+        x='Variable',
+        y='Importancia',
+        color='Coeficiente',
+        color_continuous_scale=COLOR_PALETTE,
+        title="Importancia de variables"
+    )
+    fig.update_layout(
+        xaxis_title="Variable",
+        yaxis_title="|Coeficiente|",
+        template=None,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        xaxis=dict(color='white'),
+        yaxis=dict(color='white')
+    )
     st.plotly_chart(fig, use_container_width=True, key=key)
 
+
+# -----------------------------------------------------------------------------
+# Función principal de la aplicación
+#
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
     st.markdown(
-        '<h1 class ="main-header"> Observa, Conoce y Protege: La Avifauna de ESPOL.</h1>',
+        '<h1 class="main-header"> Observa, Conoce y Protege: La Avifauna de ESPOL.</h1>',
         unsafe_allow_html=True
     )
-    
+
     # Carga del dataset
     data_path = Path('output.zip')
     df = load_dataset(data_path)
     if df.empty:
         st.stop()
+
+    # Asegurar la existencia de LOG_AVISTAMIENTOS para cálculos de correlación
+    if 'LOG_AVISTAMIENTOS' not in df.columns:
+        if 'AVISTAMIENTOS' in df.columns:
+            df['LOG_AVISTAMIENTOS'] = np.log10(df['AVISTAMIENTOS'] + 1)
+        elif 'ALL SPECIES REPORTED' in df.columns:
+            df['LOG_AVISTAMIENTOS'] = np.log10(df['ALL SPECIES REPORTED'] + 1)
 
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
@@ -376,14 +452,10 @@ def main() -> None:
 
     st.markdown("Estadísticas importantes que te gustaría saber.")
 
-
-    # Definimos las columnas
+    # KPI Boxes
     col1, col2, col3, col4 = st.columns(4)
-
-    # Definimos una altura fija para las cajas
-    height = 200  # Ajusta la altura según sea necesario
-
-    # Caja 1: Total de Aves
+    height = 200
+    # Caja 1: Total de aves
     with col1:
         aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
         kpi_html = f"""
@@ -395,7 +467,6 @@ def main() -> None:
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-
     # Caja 2: Total de la especie seleccionada
     with col2:
         aves_totales_especie = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
@@ -408,8 +479,7 @@ def main() -> None:
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-
-    # Caja 3: Categoría UICN
+    # Caja 3: Categoría UICN / Riesgo de extinción
     with col3:
         categoria = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
         kpi_html = f"""
@@ -421,7 +491,6 @@ def main() -> None:
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-
     # Caja 4: Distribución Geográfica
     with col4:
         endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
@@ -447,7 +516,6 @@ def main() -> None:
     mes_mas_frecuente = None
     month_counts_species = pd.Series(dtype=float)
     if not species_df.empty and 'MONTH' in species_df.columns:
-        # Usar AVISTAMIENTOS si está disponible, de lo contrario usar ALL SPECIES REPORTED
         if 'AVISTAMIENTOS' in species_df.columns and not species_df['AVISTAMIENTOS'].isnull().all():
             month_counts_species = species_df.groupby('MONTH')['AVISTAMIENTOS'].sum()
         elif 'ALL SPECIES REPORTED' in species_df.columns:
@@ -458,11 +526,10 @@ def main() -> None:
                 mes_mas_frecuente = month_map.get(int(top_month), str(top_month))
             except Exception:
                 mes_mas_frecuente = str(top_month)
-                
-        # Mostrar el mes con más avistamientos en un apartado destacado
+
+    # Mostrar el mes con más avistamientos
     if mes_mas_frecuente:
         st.markdown("### 📅 Mes de mayor avistamiento")
-        # Tarjeta morada para el mensaje de mayor avistamiento
         st.markdown(
             f"""
             <div style="background-color:#6a1b9a;
@@ -476,20 +543,27 @@ def main() -> None:
             """,
             unsafe_allow_html=True
         )
-        # Mostrar un gráfico de barras de avistamientos por mes para la especie
+        # Gráfico de barras de avistamientos por mes
         fig_month = px.bar(
             month_counts_species.reset_index(),
             x='MONTH',
             y=month_counts_species.name,
-            title=f"Avistamientos mensuales de {selected_common_name}"
+            title=f"Avistamientos mensuales de {selected_common_name}",
+            color='MONTH',
+            color_discrete_sequence=COLOR_PALETTE
         )
         fig_month.update_layout(
             xaxis_title="Mes",
-            yaxis_title="Total de avistamientos"
+            yaxis_title="Total de avistamientos",
+            template=None,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='white'),
+            xaxis=dict(color='white'),
+            yaxis=dict(color='white')
         )
         st.plotly_chart(fig_month, use_container_width=True)
     else:
-        # Tarjeta morada para indicar que no hay datos suficientes
         st.markdown(
             """
             <div style="background-color:#6a1b9a;
@@ -503,7 +577,7 @@ def main() -> None:
             unsafe_allow_html=True
         )
 
-    # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
+    # Variables climáticas candidatas
     climate_variable_names = {
         'PRECTOTCORR': 'Precipitación total corregida',
         'PS': 'Presión en superficie',
@@ -514,14 +588,10 @@ def main() -> None:
         'TS': 'Temperatura superficial',
         'WS10M': 'Velocidad del viento a 10 metros'
     }
+    climate_vars = list(climate_variable_names.keys())
 
-    # Variables climáticas candidatas (siglas)
-    climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
-    
-    
     # Sección: Variables climáticas que más afectan a la especie
     st.markdown("### Variables climáticas que más afectan a la especie")
-    # Información explicativa en un recuadro morado
     st.markdown(
         f"""
         <div style="background-color:#6a1b9a; color:white; padding:15px; border-radius:8px; margin-bottom:10px;">
@@ -533,11 +603,9 @@ def main() -> None:
         """,
         unsafe_allow_html=True
     )
-    # Calcular correlaciones entre variables climáticas y log(avistamientos) para la especie seleccionada
     if not species_df.empty:
-        climate_vars_list = list(climate_variable_names.keys())
         correlation_dict = {}
-        for var in climate_vars_list:
+        for var in climate_vars:
             if var in species_df.columns and 'LOG_AVISTAMIENTOS' in species_df.columns:
                 corr_value = species_df[var].corr(species_df['LOG_AVISTAMIENTOS'])
                 if not pd.isna(corr_value):
@@ -547,45 +615,57 @@ def main() -> None:
             corr_df['AbsCorr'] = corr_df['Correlation'].abs()
             corr_df_sorted = corr_df.sort_values('AbsCorr', ascending=False).reset_index()
             corr_df_sorted['Variable'] = corr_df_sorted['index']
-            # Gráfico polar de barras para la magnitud de las correlaciones
+            # Gráfico polar de barras
             fig_corr = px.bar_polar(
                 corr_df_sorted,
                 r='AbsCorr',
                 theta='Variable',
+                color='AbsCorr',
+                color_continuous_scale=COLOR_PALETTE,
                 title=f"Impacto de variables climáticas en {selected_common_name}"
             )
-            fig_corr.update_layout(template="plotly_dark")
+            fig_corr.update_layout(
+                template=None,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='white'),
+                polar=dict(
+                    radialaxis=dict(color='white'),
+                    angularaxis=dict(color='white')
+                )
+            )
             st.plotly_chart(fig_corr, use_container_width=True)
         else:
             st.markdown(
-                "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-                "No se pudieron calcular correlaciones para las variables climáticas de esta especie."
-                "</div>",
+                """
+                <div style="background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;">
+                    No se pudieron calcular correlaciones para las variables climáticas de esta especie.
+                </div>
+                """,
                 unsafe_allow_html=True
             )
     else:
         st.markdown(
-            "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-            "No se encontraron datos de esta especie para calcular correlaciones de variables climáticas."
-            "</div>",
+            """
+            <div style="background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;">
+                No se encontraron datos de esta especie para calcular correlaciones de variables climáticas.
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
-        # Sección: Aves más probables por mes de avistamiento
+    # Sección: Aves más probables por mes de avistamiento
     st.markdown("### Aves más probables por mes")
-    # Opciones de meses disponibles para el filtro (incluye 'Todos')
     month_options = ['Todos'] + [month_map[m] for m in sorted(df['MONTH'].dropna().unique())]
     selected_month_name_filter = st.selectbox(
         "Seleccione un mes para ver las especies más probables",
         options=month_options
     )
     if selected_month_name_filter != 'Todos':
-        # Convertir el nombre del mes a número
         month_name_to_number = {v: k for k, v in month_map.items()}
         selected_month_filter = month_name_to_number.get(selected_month_name_filter)
         df_month_filter = df[df['MONTH'] == selected_month_filter]
         if not df_month_filter.empty:
-            # Calcular los avistamientos por especie y seleccionar las 7 más frecuentes
             month_filter_counts = (
                 df_month_filter.groupby('COMMON NAME')['AVISTAMIENTOS']
                 .sum()
@@ -593,73 +673,67 @@ def main() -> None:
                 .sort_values('AVISTAMIENTOS', ascending=False)
                 .head(7)
             )
-            # Crear un treemap para visualizar la proporción de avistamientos
+            # Treemap para visualizar proporciones
             fig_month_filter = px.treemap(
                 month_filter_counts,
                 path=['COMMON NAME'],
                 values='AVISTAMIENTOS',
+                color='AVISTAMIENTOS',
+                color_continuous_scale=COLOR_PALETTE,
                 title=f"Aves más probables en {selected_month_name_filter}"
             )
-            fig_month_filter.update_layout(template="plotly_dark")
+            fig_month_filter.update_layout(
+                template=None,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='white')
+            )
             st.plotly_chart(fig_month_filter, use_container_width=True)
         else:
             st.markdown(
-                "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-                "No hay datos de avistamientos para el mes seleccionado."
-                "</div>",
+                """
+                <div style="background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;">
+                    No hay datos de avistamientos para el mes seleccionado.
+                </div>
+                """,
                 unsafe_allow_html=True
             )
     else:
         st.markdown(
-            "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-            "Seleccione un mes para ver las especies más probables en ese periodo."
-            "</div>",
+            """
+            <div style="background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;">
+                Seleccione un mes para ver las especies más probables en ese periodo.
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
-    
-    # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
+    # Widget para seleccionar variables para la serie de tiempo
     selected_vars_time = st.sidebar.multiselect(
         "Variables climáticas para series de tiempo:",
-        options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
+        options=[climate_variable_names[var] for var in climate_vars],
         default=[]
     )
+    selected_vars_time_siglas = [var for var in climate_vars if climate_variable_names[var] in selected_vars_time]
 
-    # Convertir las selecciones del usuario de vuelta a las siglas
-    selected_vars_time_siglas = [
-        var for var in climate_vars if climate_variable_names[var] in selected_vars_time
-    ]
-
-
-    
-    # Asegurar la existencia de LOG_AVISTAMIENTOS para cálculos de correlación
-    if 'LOG_AVISTAMIENTOS' not in df.columns:
-        if 'AVISTAMIENTOS' in df.columns:
-            df['LOG_AVISTAMIENTOS'] = np.log10(df['AVISTAMIENTOS'] + 1)
-        elif 'ALL SPECIES REPORTED' in df.columns:
-            df['LOG_AVISTAMIENTOS'] = np.log10(df['ALL SPECIES REPORTED'] + 1)
-
-       
-    # Top N de avistamientos (fuera del filtro de especie)
+    # Top N de avistamientos
     st.sidebar.markdown("---")
-    max_n = min(10, species_mapping.shape[0])  # limite de especies a mostrar
+    max_n = min(10, species_mapping.shape[0])
     n_top = st.sidebar.slider("Número de especies para Top N", 5, max_n, 5)
 
     # Carga de modelos predictivos
     st.sidebar.markdown("---")
     st.sidebar.header("Modelos predictivos")
-    # Modelos para predecir cantidades (uno por especie)
     model_paths = {
         'Especie 1': Path('model_especie1.pkl'),
         'Especie 2': Path('model_especie2.pkl'),
         'Especie 3': Path('model_especie3.pkl')
     }
     models = load_models(model_paths)
-    # Modelo logístico general para presencia/ausencia
     logistic_model_path = Path('model_logistic.pkl')
     logistic_model = load_logistic_model(logistic_model_path)
 
-        # Mostrar instrucciones de lectura del gráfico en una tarjeta morada personalizada
+    # Instrucciones para la serie de tiempo
     st.markdown(
         """
         <div style="background-color:#6a1b9a;
@@ -677,8 +751,7 @@ def main() -> None:
         """,
         unsafe_allow_html=True
     )
-    
-    
+
     # Series de tiempo de variables climáticas
     st.markdown("### Series de tiempo de variables climáticas")
     plot_time_series(df, selected_vars_time_siglas)
@@ -687,10 +760,10 @@ def main() -> None:
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
     plot_top_n_birds(df, n_top)
 
+    # Comparación de modelos predictivos
     st.markdown("## Comparación de modelos por especie")
     with st.expander("Ver comparación de modelos"):
         for img_file, desc in zip(MODEL_IMAGE_FILES, MODEL_IMAGE_DESCRIPTIONS):
-            # Utilizar columnas para poner cada imagen con su tarjeta informativa
             col_img, col_info = st.columns([3, 2])
             with col_img:
                 if Path(img_file).exists():
@@ -701,7 +774,6 @@ def main() -> None:
                         "Asegúrate de colocar el archivo en la misma carpeta del script o actualiza la ruta en MODEL_IMAGE_FILES."
                     )
             with col_info:
-                # Tarjeta personalizada de color morado
                 st.markdown(
                     f"""
                     <div style="background-color:#6a1b9a;
@@ -715,10 +787,8 @@ def main() -> None:
                     unsafe_allow_html=True
                 )
 
-        
     st.markdown("---")
-    st.caption("Aplicación desarrollada para visualizar avistamientos y variables climáticas de aves.")
-
+    st.caption("Aplicación desarrollada por Nicolás Bastidas y Stefany Godoy con la ayuda de nuestra tutora Phd. Mariela González Narváez para visualizar avistamientos y variables climáticas de aves.")
 
 if __name__ == '__main__':
     main()
