@@ -367,45 +367,6 @@ def main() -> None:
 
     st.markdown("Estadísticas importantes que te gustaría saber.")
 
-        # Sección: Aves más probables por mes de avistamiento
-    st.markdown("### Aves más probables por mes")
-    month_map = {1:'Enero', 2:'Febrero', 3:'Marzo', 4:'Abril', 5:'Mayo', 6:'Junio',
-                 7:'Julio', 8:'Agosto', 9:'Septiembre', 10:'Octubre', 11:'Noviembre', 12:'Diciembre'}
-    
-    month_options = ['Todos'] + [month_map[m] for m in sorted(df['MONTH'].dropna().unique())]
-    selected_month_name = st.selectbox("Seleccione un mes para ver las especies más probables",
-                                       options=month_options)
-    
-    if selected_month_name != 'Todos':
-        # Convertir nombre de mes a número
-        month_name_to_number = {v: k for k, v in month_map.items()}
-        selected_month = month_name_to_number.get(selected_month_name)
-        df_month_filter = df[df['MONTH'] == selected_month]
-    
-        if not df_month_filter.empty:
-            month_counts = df_month_filter.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().reset_index()
-            month_counts = month_counts.sort_values('AVISTAMIENTOS', ascending=False).head(10)
-            fig_month = px.bar(
-                month_counts, x='COMMON NAME', y='AVISTAMIENTOS',
-                title=f"Aves más probables en {selected_month_name}",
-                labels={'COMMON NAME':'Especie','AVISTAMIENTOS':'Avistamientos'}
-            )
-            fig_month.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig_month, use_container_width=True)
-        else:
-            st.markdown(
-                "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-                "No hay datos de avistamientos para el mes seleccionado."
-                "</div>",
-                unsafe_allow_html=True
-            )
-    else:
-        st.markdown(
-            "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-            "Seleccione un mes para ver las especies más probables en ese periodo."
-            "</div>",
-            unsafe_allow_html=True
-        )
 
     # Definimos las columnas
     col1, col2, col3, col4 = st.columns(4)
@@ -533,7 +494,47 @@ def main() -> None:
             unsafe_allow_html=True
         )
 
+        # Sección: Aves más probables por mes de avistamiento
+    st.markdown("### Aves más probables por mes")
+    month_map = {1:'Enero', 2:'Febrero', 3:'Marzo', 4:'Abril', 5:'Mayo', 6:'Junio',
+                 7:'Julio', 8:'Agosto', 9:'Septiembre', 10:'Octubre', 11:'Noviembre', 12:'Diciembre'}
+    
+    month_options = ['Todos'] + [month_map[m] for m in sorted(df['MONTH'].dropna().unique())]
+    selected_month_name = st.selectbox("Seleccione un mes para ver las especies más probables",
+                                       options=month_options)
+    
+    if selected_month_name != 'Todos':
+        # Convertir nombre de mes a número
+        month_name_to_number = {v: k for k, v in month_map.items()}
+        selected_month = month_name_to_number.get(selected_month_name)
+        df_month_filter = df[df['MONTH'] == selected_month]
+    
+        if not df_month_filter.empty:
+            month_counts = df_month_filter.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().reset_index()
+            month_counts = month_counts.sort_values('AVISTAMIENTOS', ascending=False).head(10)
+            fig_month = px.bar(
+                month_counts, x='COMMON NAME', y='AVISTAMIENTOS',
+                title=f"Aves más probables en {selected_month_name}",
+                labels={'COMMON NAME':'Especie','AVISTAMIENTOS':'Avistamientos'}
+            )
+            fig_month.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig_month, use_container_width=True)
+        else:
+            st.markdown(
+                "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
+                "No hay datos de avistamientos para el mes seleccionado."
+                "</div>",
+                unsafe_allow_html=True
+            )
+    else:
+        st.markdown(
+            "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
+            "Seleccione un mes para ver las especies más probables en ese periodo."
+            "</div>",
+            unsafe_allow_html=True
+        )
 
+    
     # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
     climate_variable_names = {
         'PRECTOTCORR': 'Precipitación total corregida',
