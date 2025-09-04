@@ -377,7 +377,7 @@ def main() -> None:
     with col1:
         aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size: 22px;">🦜 Total de Aves</h4>
@@ -390,7 +390,7 @@ def main() -> None:
     with col2:
         aves_totales_especie = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
@@ -403,10 +403,10 @@ def main() -> None:
     with col3:
         categoria = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
-            <h4 style="margin:0; font-size:22px;">Categoría UICN</h4>
+            <h4 style="margin:0; font-size:22px;">Riesgo de Extinción</h4>
             <h3 style="margin:5px 0; font-size: 24px;">{categoria.iloc[0]}</h3>
         </div>
         """
@@ -417,7 +417,7 @@ def main() -> None:
         endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
         endemica_texto = endemica.apply(lambda x: 'Especie endémica' if x else 'Especie no endémica')
         kpi_html = f"""
-        <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
+        <div style="background-color:#800080; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">Distribución Geográfica</h4>
