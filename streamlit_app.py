@@ -517,50 +517,61 @@ def main() -> None:
 
     # Variables climáticas candidatas (siglas)
     climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
-     # Sección: Variables climáticas que más afectan a la especie
+    
+    
+    # Sección: Variables climáticas que más afectan a la especie
     st.markdown("### Variables climáticas que más afectan a la especie")
+    # Información explicativa en un recuadro morado
+    st.markdown(
+        f"""
+        <div style="background-color:#6a1b9a; color:white; padding:15px; border-radius:8px; margin-bottom:10px;">
+            <strong>¿Qué muestra este gráfico?</strong><br/>
+            El siguiente gráfico polar muestra la influencia relativa de cada variable climática sobre los avistamientos de
+            <em>{selected_common_name}</em>. Cada barra radial representa la magnitud absoluta de la correlación (|correlación|);
+            cuanto más larga la barra, mayor es la influencia de la variable en los avistamientos de esta especie.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    # Calcular correlaciones entre variables climáticas y log(avistamientos) para la especie seleccionada
     if not species_df.empty:
         climate_vars_list = list(climate_variable_names.keys())
         correlation_dict = {}
         for var in climate_vars_list:
-            # Asegurar que la variable exista y que el log de avistamientos tenga valores
             if var in species_df.columns and 'LOG_AVISTAMIENTOS' in species_df.columns:
                 corr_value = species_df[var].corr(species_df['LOG_AVISTAMIENTOS'])
-                if pd.notna(corr_value):
+                if not pd.isna(corr_value):
                     correlation_dict[var] = corr_value
-    
         if correlation_dict:
-            corr_df = (
-                pd.DataFrame.from_dict(correlation_dict, orient='index', columns=['Correlation'])
-                .assign(AbsCorr=lambda df_: df_['Correlation'].abs())
-                .sort_values('AbsCorr', ascending=False)
-                .reset_index()
-                .rename(columns={'index': 'Variable'})
-            )
-            fig_corr = px.bar(
-                corr_df,
-                x='Variable',
-                y='AbsCorr',
-                title=f"Impacto de variables climáticas en {selected_common_name}",
-                labels={'AbsCorr': '|Correlación|'}
+            corr_df = pd.DataFrame.from_dict(correlation_dict, orient='index', columns=['Correlation'])
+            corr_df['AbsCorr'] = corr_df['Correlation'].abs()
+            corr_df_sorted = corr_df.sort_values('AbsCorr', ascending=False).reset_index()
+            corr_df_sorted['Variable'] = corr_df_sorted['index']
+            # Gráfico polar de barras para la magnitud de las correlaciones
+            fig_corr = px.bar_polar(
+                corr_df_sorted,
+                r='AbsCorr',
+                theta='Variable',
+                title=f"Impacto de variables climáticas en {selected_common_name}"
             )
             fig_corr.update_layout(template="plotly_dark")
             st.plotly_chart(fig_corr, use_container_width=True)
         else:
             st.markdown(
                 "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-                "No hay suficientes datos para calcular correlaciones para esta especie."
+                "No se pudieron calcular correlaciones para las variables climáticas de esta especie."
                 "</div>",
                 unsafe_allow_html=True
             )
     else:
         st.markdown(
             "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
-            "No se encontraron datos de esta especie para calcular correlaciones."
+            "No se encontraron datos de esta especie para calcular correlaciones de variables climáticas."
             "</div>",
             unsafe_allow_html=True
         )
-    # Sección: Aves más probables por mes de avistamiento
+
+        # Sección: Aves más probables por mes de avistamiento
     st.markdown("### Aves más probables por mes")
     # Opciones de meses disponibles para el filtro (incluye 'Todos')
     month_options = ['Todos'] + [month_map[m] for m in sorted(df['MONTH'].dropna().unique())]
@@ -568,14 +579,13 @@ def main() -> None:
         "Seleccione un mes para ver las especies más probables",
         options=month_options
     )
-    
     if selected_month_name_filter != 'Todos':
         # Convertir el nombre del mes a número
         month_name_to_number = {v: k for k, v in month_map.items()}
         selected_month_filter = month_name_to_number.get(selected_month_name_filter)
         df_month_filter = df[df['MONTH'] == selected_month_filter]
         if not df_month_filter.empty:
-            # Calcular total de avistamientos por especie y tomar las 7 más frecuentes
+            # Calcular los avistamientos por especie y seleccionar las 7 más frecuentes
             month_filter_counts = (
                 df_month_filter.groupby('COMMON NAME')['AVISTAMIENTOS']
                 .sum()
@@ -583,16 +593,14 @@ def main() -> None:
                 .sort_values('AVISTAMIENTOS', ascending=False)
                 .head(7)
             )
-            # Crear la figura tipo pie (o donut)
-            fig_month_filter = px.pie(
+            # Crear un treemap para visualizar la proporción de avistamientos
+            fig_month_filter = px.treemap(
                 month_filter_counts,
+                path=['COMMON NAME'],
                 values='AVISTAMIENTOS',
-                names='COMMON NAME',
-                title=f"Aves más probables en {selected_month_name_filter}",
-                hole=0.4  # Si prefieres un donut; elimina este argumento para un pie completo
+                title=f"Aves más probables en {selected_month_name_filter}"
             )
             fig_month_filter.update_layout(template="plotly_dark")
-            # Mostrar la figura en Streamlit
             st.plotly_chart(fig_month_filter, use_container_width=True)
         else:
             st.markdown(
@@ -610,7 +618,6 @@ def main() -> None:
         )
 
     
-
     # Widget para seleccionar variables para la serie de tiempo (mostrar nombres completos)
     selected_vars_time = st.sidebar.multiselect(
         "Variables climáticas para series de tiempo:",
