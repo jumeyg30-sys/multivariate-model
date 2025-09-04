@@ -25,13 +25,14 @@ fondo_path = "espol_fondo.png"
 with open(fondo_path, "rb") as file:
     encoded = base64.b64encode(file.read()).decode()
 
+  
 # Inyectar el CSS para el fondo con capa morada atenuada
 st.markdown(
     f"""
     <style>
     .stApp {{
         /* Aplica primero la capa morada semitransparente y luego la imagen de fondo */
-        background-image: linear-gradient(rgba(128, 0, 128, 0.4), rgba(128, 0, 128, 0.4)),
+        background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(128, 0, 128, 0.3)),
                           url(data:image/jpeg;base64,{encoded});
         background-size: cover;
         background-position: center;
