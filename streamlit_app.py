@@ -21,7 +21,7 @@ from PIL import Image
 # Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
 
 # Ruta de la imagen del banner
-banner_image_path = "espol-ecuador.jpeg"  # Asegúrate de que esta imagen esté en el directorio correcto
+banner_image_path = "lago.jpeg"  # Asegúrate de que esta imagen esté en el directorio correcto
 
 # Verificar si la imagen existe antes de cargarla
 if Path(banner_image_path).exists():
@@ -36,13 +36,12 @@ else:
     st.error(f"No se encontró la imagen en la ruta '{banner_image_path}'. Asegúrate de que el archivo esté en el directorio correcto.")
 
 
-MODEL_IMAGE_FILES = ["Saffron.png", "Blue.png", "Ecuadorian.png"]  # Imágenes de los modelos predictivos
+MODEL_IMAGE_FILES = ["saffron2.png", "ecuadorian2.png", "blue2.png"]  # Imágenes de los modelos predictivos
 MODEL_IMAGE_DESCRIPTIONS = [
-    "Descripción del resultado del modelo 1.",
-    "Descripción del resultado del modelo 2.",
-    "Descripción del resultado del modelo 3."
+    "El modelo predice que en 2025 veremos una cantidad de avistamientos de Saffron Finch dentro de un rango de valores. Se espera que el número de avistamientos sea similar o ligeramente mayor que en años anteriores. La línea azul muestra la tendencia general, y las sombras indican un margen de incertidumbre sobre cuántos más avistamientos podría haber. En resumen, podríamos ver alrededor de 100 avistamientos de Saffron Finch en 2025, con un pequeño aumento en comparación con los años previos.",
+    "El modelo predice que en 2025 los avistamientos del Ecuadorian Ground Dove estarán dentro de un rango de valores, con una ligera tendencia a la baja en comparación con los años anteriores. Aunque hay algunas fluctuaciones, la línea azul indica que la cantidad de avistamientos podría estabilizarse en un nivel bajo.",
+    "El modelo predice que se espera que los avistamientos de la especie Blue Gray estén dentro de un rango específico. El modelo muestra que los avistamientos podrían estabilizarse en niveles bajos, con fluctuaciones a lo largo del año. Aunque el número de avistamientos podría variar, no se anticipa un aumento significativo, y las predicciones sugieren una tendencia a la baja o al menos una estabilización en los valores cercanos a cero."
 ]
-
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
