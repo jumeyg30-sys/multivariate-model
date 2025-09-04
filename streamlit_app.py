@@ -503,31 +503,31 @@ def main() -> None:
             unsafe_allow_html=True
         )
 
-        # Sección: Aves más probables por mes de avistamiento
+    # Sección: Aves más probables por mes de avistamiento
     st.markdown("### Aves más probables por mes")
-    month_map = {1:'Enero', 2:'Febrero', 3:'Marzo', 4:'Abril', 5:'Mayo', 6:'Junio',
-                 7:'Julio', 8:'Agosto', 9:'Septiembre', 10:'Octubre', 11:'Noviembre', 12:'Diciembre'}
-    
+    # Opciones de meses disponibles para el filtro (incluye 'Todos')
     month_options = ['Todos'] + [month_map[m] for m in sorted(df['MONTH'].dropna().unique())]
-    selected_month_name = st.selectbox("Seleccione un mes para ver las especies más probables",
-                                       options=month_options)
-    
-    if selected_month_name != 'Todos':
-        # Convertir nombre de mes a número
+    selected_month_name_filter = st.selectbox(
+        "Seleccione un mes para ver las especies más probables",
+        options=month_options
+    )
+    if selected_month_name_filter != 'Todos':
+        # Convertir el nombre del mes a número
         month_name_to_number = {v: k for k, v in month_map.items()}
-        selected_month = month_name_to_number.get(selected_month_name)
-        df_month_filter = df[df['MONTH'] == selected_month]
-    
+        selected_month_filter = month_name_to_number.get(selected_month_name_filter)
+        df_month_filter = df[df['MONTH'] == selected_month_filter]
         if not df_month_filter.empty:
-            month_counts = df_month_filter.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().reset_index()
-            month_counts = month_counts.sort_values('AVISTAMIENTOS', ascending=False).head(10)
-            fig_month = px.bar(
-                month_counts, x='COMMON NAME', y='AVISTAMIENTOS',
-                title=f"Aves más probables en {selected_month_name}",
-                labels={'COMMON NAME':'Especie','AVISTAMIENTOS':'Avistamientos'}
+            month_filter_counts = df_month_filter.groupby('COMMON NAME')['AVISTAMIENTOS'].sum().reset_index()
+            month_filter_counts = month_filter_counts.sort_values('AVISTAMIENTOS', ascending=False).head(10)
+            fig_month_filter = px.bar(
+                month_filter_counts,
+                x='COMMON NAME',
+                y='AVISTAMIENTOS',
+                title=f"Aves más probables en {selected_month_name_filter}",
+                labels={'COMMON NAME': 'Especie', 'AVISTAMIENTOS': 'Avistamientos'}
             )
-            fig_month.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig_month, use_container_width=True)
+            fig_month_filter.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig_month_filter, use_container_width=True)
         else:
             st.markdown(
                 "<div style=\"background-color:#6a1b9a; color:white; padding:15px; border-radius:8px;\">"
