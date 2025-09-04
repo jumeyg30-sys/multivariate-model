@@ -533,33 +533,33 @@ def main() -> None:
     st.markdown("### Top N especies por avistamientos (en todo el conjunto de datos)")
     plot_top_n_birds(df, n_top)
 
-  st.markdown("## Comparación de modelos por especie")
-with st.expander("Ver comparación de modelos"):
-    for img_file, desc in zip(MODEL_IMAGE_FILES, MODEL_IMAGE_DESCRIPTIONS):
-        # Utilizar columnas para poner cada imagen con su tarjeta informativa
-        col_img, col_info = st.columns([3, 2])
-        with col_img:
-            if Path(img_file).exists():
-                st.image(img_file, use_container_width=True)
-            else:
-                st.warning(
-                    f"No se encontró la imagen '{img_file}'. "
-                    "Asegúrate de colocar el archivo en la misma carpeta del script o actualiza la ruta en MODEL_IMAGE_FILES."
+    st.markdown("## Comparación de modelos por especie")
+    with st.expander("Ver comparación de modelos"):
+        for img_file, desc in zip(MODEL_IMAGE_FILES, MODEL_IMAGE_DESCRIPTIONS):
+            # Utilizar columnas para poner cada imagen con su tarjeta informativa
+            col_img, col_info = st.columns([3, 2])
+            with col_img:
+                if Path(img_file).exists():
+                    st.image(img_file, use_container_width=True)
+                else:
+                    st.warning(
+                        f"No se encontró la imagen '{img_file}'. "
+                        "Asegúrate de colocar el archivo en la misma carpeta del script o actualiza la ruta en MODEL_IMAGE_FILES."
+                    )
+            with col_info:
+                # Tarjeta personalizada de color morado
+                st.markdown(
+                    f"""
+                    <div style="background-color:#6a1b9a;
+                                color:white;
+                                padding:15px;
+                                border-radius:8px;
+                                margin:5px 0;">
+                        {desc}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
-        with col_info:
-            # Tarjeta personalizada de color morado
-            st.markdown(
-                f"""
-                <div style="background-color:#6a1b9a;
-                            color:white;
-                            padding:15px;
-                            border-radius:8px;
-                            margin:5px 0;">
-                    {desc}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
 
         
     st.markdown("---")
