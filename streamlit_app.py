@@ -331,16 +331,7 @@ def main() -> None:
         '<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>',
         unsafe_allow_html=True
     )
-
-    # Mostrar la imagen de cabecera si el archivo existe
-    if Path(BANNER_IMAGE).exists():
-        st.image(BANNER_IMAGE, use_column_width=True)
-    else:
-        st.warning(
-            f"No se encontró la imagen de cabecera '{BANNER_IMAGE}'. "
-            "Coloca la imagen en el mismo directorio del script o actualiza la variable BANNER_IMAGE."
-        )
-
+    
     # Carga del dataset
     data_path = Path('output.zip')
     df = load_dataset(data_path)
