@@ -20,17 +20,19 @@ from PIL import Image
 # Nombres de los archivos de imágenes que se utilizarán en el dashboard.
 # Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
 
-# Ruta de la imagen del banner
-banner_image_path = "espol-ecuador.jpeg"  # Asegúrate de que esta imagen esté en el mismo directorio
+# Ruta del banner
+banner_image_path = "espol-ecuador.jpeg"
 
-# Cargar la imagen
-BANNER_IMAGE= Image.open(banner_image_path)
-
-# Ajustar la imagen al tamaño recomendado (1600px de ancho, 300px de alto)
-BANNER_IMAGE = BANNER_IMAGE.resize((1600, 300))
-
-# Mostrar la imagen ajustada
-st.image(BANNER_IMAGE, use_column_width=True)
+# Verifica si el archivo existe
+if Path(banner_image_path).exists():
+    # Carga la imagen
+    BANNER_IMAGE = Image.open(banner_image_path)
+    # Ajusta tamaño al ancho y alto recomendados
+    BANNER_IMAGE = BANNER_IMAGE.resize((1600, 300))
+    # Muestra la imagen en Streamlit
+    st.image(BANNER_IMAGE, use_column_width=True)
+else:
+    st.error(f"No se encontró la imagen en la ruta '{banner_image_path}'")
 
 MODEL_IMAGE_FILES = ["Saffron.png", "Blue.png", "Ecuadorian.png"]  # Imágenes de los modelos predictivos
 MODEL_IMAGE_DESCRIPTIONS = [
