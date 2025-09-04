@@ -10,9 +10,35 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit as st
 from sklearn import metrics
 from sklearn.metrics import accuracy_score, roc_auc_score
+import calendar  # Para convertir números de mes a nombres
+import streamlit as st
+from PIL import Image
+
+
+# Nombres de los archivos de imágenes que se utilizarán en el dashboard.
+# Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
+
+# Ruta de la imagen del banner
+banner_image_path = "banner_image.jpg"  # Asegúrate de que esta imagen esté en el mismo directorio
+
+# Cargar la imagen
+BANNER_IMAGE= Image.open(banner_image_path)
+
+# Ajustar la imagen al tamaño recomendado (1600px de ancho, 300px de alto)
+BANNER_IMAGE = BANNER_IMAGE.resize((1600, 300))
+
+# Mostrar la imagen ajustada
+st.image(BANNER_IMAGE, use_column_width=True)
+
+MODEL_IMAGE_FILES = ["model1.png", "model2.png", "model3.png"]  # Imágenes de los modelos predictivos
+MODEL_IMAGE_DESCRIPTIONS = [
+    "Descripción del resultado del modelo 1.",
+    "Descripción del resultado del modelo 2.",
+    "Descripción del resultado del modelo 3."
+]
+
 
 @st.cache_data(show_spinner=True)
 def load_dataset(zip_path: Path) -> pd.DataFrame:
@@ -24,6 +50,7 @@ def load_dataset(zip_path: Path) -> pd.DataFrame:
     Returns:
         DataFrame con las columnas definidas en la descripción.
 
+        
     Esta función busca el primer archivo CSV dentro del ZIP y lo lee con
     ``pandas.read_csv``. Las fechas en ``YEAR_MONTH`` se convierten en
     datetime, y el campo ``MONTH`` se asegura como entero.
@@ -52,20 +79,21 @@ def load_dataset(zip_path: Path) -> pd.DataFrame:
         df['MONTH'] = pd.to_numeric(df['MONTH'], errors='coerce').astype('Int64')
 
     return df
-from sklearn.metrics import accuracy_score, roc_auc_score
+
 
 def compute_model_metrics(model, X, y):
     """Calcula las métricas del modelo, como la exactitud (Accuracy) y AUC."""
     # Realiza las predicciones con el modelo
     y_pred = model.predict(X)
-    
+
     # Calcular Exactitud (Accuracy)
     acc = accuracy_score(y, y_pred)
-    
+
     # Calcular AUC (Área bajo la curva ROC)
     auc = roc_auc_score(y, y_pred)
-    
+
     return acc, auc
+
 
 @st.cache_data(show_spinner=True)
 def load_models(model_paths: Dict[str, Path]) -> Dict[str, object]:
@@ -110,7 +138,7 @@ def load_logistic_model(model_path: Path):
     else:
         return None
 
-# Función para graficar la serie de tiempo para las variables climáticas sin filtrar por especie
+
 def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
     """Grafica series de tiempo para las variables seleccionadas con líneas de tendencia.
 
@@ -145,9 +173,12 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
         # Obtener los datos de la variable climática
         x = grouped_climate['YEAR']
         y = grouped_climate[var]
-        
+
         # Calcular la línea de tendencia utilizando regresión lineal
-        slope, intercept, _, _, _ = stats.linregress(x, y)
+        try:
+            slope, intercept = np.polyfit(x, y, 1)
+        except Exception:
+            slope, intercept = 0, y.mean()
         trendline = slope * x + intercept
 
         # Graficar la serie de tiempo de la variable climática
@@ -163,9 +194,10 @@ def plot_time_series(df_climate: pd.DataFrame, variables: List[str]) -> None:
                       xaxis_title="Año",
                       yaxis_title="Valor",
                       template="plotly_dark")
-    
+
     # Mostrar el gráfico
     st.plotly_chart(fig, use_container_width=True)
+
 
 def get_species_mapping(df: pd.DataFrame) -> pd.DataFrame:
     """Obtiene un DataFrame con pares únicos de nombre común y científico.
@@ -198,6 +230,7 @@ def filter_by_species(df: pd.DataFrame, common_name: str) -> pd.DataFrame:
     """
     return df[df['COMMON NAME'] == common_name].copy()
 
+
 def plot_top_n_birds(df: pd.DataFrame, n: int) -> None:
     """Muestra un gráfico con las N especies más avistadas.
 
@@ -216,6 +249,7 @@ def plot_top_n_birds(df: pd.DataFrame, n: int) -> None:
                  title=f"Top {n} especies por número de avistamientos")
     fig.update_layout(xaxis_title="Total de avistamientos", yaxis_title="Especie")
     st.plotly_chart(fig, use_container_width=True)
+
 
 def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
     """Genera un diagrama de cajas (boxplot) de una variable por mes.
@@ -252,7 +286,7 @@ def plot_boxplot(df: pd.DataFrame, variable: str) -> None:
         st.plotly_chart(fig, use_container_width=True)
     except Exception:
         st.warning("No se pudo generar el diagrama de cajas debido a un error con los datos.")
-        
+
 
 def plot_variable_importance(model, feature_names: List[str], key: str) -> None:
     """Grafica la importancia de las variables de un modelo logístico.
@@ -289,14 +323,26 @@ def plot_variable_importance(model, feature_names: List[str], key: str) -> None:
 
 def main() -> None:
     st.set_page_config(page_title="Dashboard de avistamientos de aves", layout="wide")
-    st.markdown('<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<h1 class ="main-header"> 🐢 Dashboard de Avistamientos de Aves en el Campus ESPOL.</h1>',
+        unsafe_allow_html=True
+    )
+
+    # Mostrar la imagen de cabecera si el archivo existe
+    if Path(BANNER_IMAGE).exists():
+        st.image(BANNER_IMAGE, use_column_width=True)
+    else:
+        st.warning(
+            f"No se encontró la imagen de cabecera '{BANNER_IMAGE}'. "
+            "Coloca la imagen en el mismo directorio del script o actualiza la variable BANNER_IMAGE."
+        )
+
     # Carga del dataset
     data_path = Path('output.zip')
     df = load_dataset(data_path)
     if df.empty:
         st.stop()
-    
+
     # Obtener mapeo entre nombre común y científico
     species_mapping = get_species_mapping(df)
 
@@ -314,13 +360,13 @@ def main() -> None:
     st.sidebar.markdown(f"**Nombre científico:** {selected_scientific_name}")
 
     st.markdown("🐦 ESTADÍSTICA DE AVES")
-    
+
     # Definimos las columnas
     col1, col2, col3, col4 = st.columns(4)
-    
+
     # Definimos una altura fija para las cajas
     height = 200  # Ajusta la altura según sea necesario
-    
+
     # Caja 1: Total de Aves
     with col1:
         aves_totales = df['ALL SPECIES REPORTED'].sum().astype(int)
@@ -333,37 +379,37 @@ def main() -> None:
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-    
+
     # Caja 2: Total de la especie seleccionada
     with col2:
-        aves_totales = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
+        aves_totales_especie = df[df['COMMON NAME'] == selected_common_name]['ALL SPECIES REPORTED'].sum().astype(int)
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">🐤 Total de {selected_common_name}</h4>
-            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales}</h3>
+            <h3 style="margin:5px 0; font-size: 24px;">{aves_totales_especie}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-    
+
     # Caja 3: Categoría UICN
     with col3:
-        Peligro = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
+        categoria = df[df['COMMON NAME'] == selected_common_name]['CATEGORIA']
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
                     justify-content: center; align-items: center;">
             <h4 style="margin:0; font-size:22px;">Categoría UICN</h4>
-            <h3 style="margin:5px 0; font-size: 24px;">{Peligro.iloc[0]}</h3>
+            <h3 style="margin:5px 0; font-size: 24px;">{categoria.iloc[0]}</h3>
         </div>
         """
         st.markdown(kpi_html, unsafe_allow_html=True)
-    
+
     # Caja 4: Distribución Geográfica
     with col4:
         endemica = df[df['COMMON NAME'] == selected_common_name]['ENDEMICO']
-        endemica_texto = endemica.apply(lambda x: 'Especie endèmica' if x else 'Especie no endémica')
+        endemica_texto = endemica.apply(lambda x: 'Especie endémica' if x else 'Especie no endémica')
         kpi_html = f"""
         <div style="background-color:#FFD700; padding: 20px; border-radius: 10px; color:white; text-align:center; 
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); height: {height}px; display: flex; flex-direction: column; 
@@ -377,16 +423,61 @@ def main() -> None:
     # Filtrar datos por especie
     species_df = filter_by_species(df, selected_common_name)
 
+    # Calcular el mes con mayor número de avistamientos para la especie seleccionada
+    month_map = {
+        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
+        7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    }
+    mes_mas_frecuente = None
+    month_counts_species = pd.Series(dtype=float)
+    if not species_df.empty and 'MONTH' in species_df.columns:
+        # Usar AVISTAMIENTOS si está disponible, de lo contrario usar ALL SPECIES REPORTED
+        if 'AVISTAMIENTOS' in species_df.columns and not species_df['AVISTAMIENTOS'].isnull().all():
+            month_counts_species = species_df.groupby('MONTH')['AVISTAMIENTOS'].sum()
+        elif 'ALL SPECIES REPORTED' in species_df.columns:
+            month_counts_species = species_df.groupby('MONTH')['ALL SPECIES REPORTED'].sum()
+        if not month_counts_species.empty:
+            top_month = month_counts_species.idxmax()
+            try:
+                mes_mas_frecuente = month_map.get(int(top_month), str(top_month))
+            except Exception:
+                mes_mas_frecuente = str(top_month)
+
+    # Mostrar el mes con más avistamientos en un apartado destacado
+    if mes_mas_frecuente:
+        st.markdown("### 📅 Mes de mayor avistamiento")
+        st.success(
+            f"Según los registros, el mes con mayor número de avistamientos de **{selected_common_name}** "
+            f"es **{mes_mas_frecuente}**."
+        )
+        # Mostrar un gráfico de barras de avistamientos por mes para la especie
+        fig_month = px.bar(
+            month_counts_species.reset_index(),
+            x='MONTH',
+            y=month_counts_species.name,
+            title=f"Avistamientos mensuales de {selected_common_name}"
+        )
+        fig_month.update_layout(
+            xaxis_title="Mes",
+            yaxis_title="Total de avistamientos"
+        )
+        st.plotly_chart(fig_month, use_container_width=True)
+    else:
+        st.info(
+            "No hay datos suficientes para determinar un mes de mayor avistamiento para esta especie."
+        )
+
     # Variables climáticas candidatas (columna excepto identificadores y variables de respuesta)
     climate_variable_names = {
-    'PRECTOTCORR': 'Precipitación total corregida',
-    'PS': 'Presión en superficie',
-    'RH2M': 'Humedad relativa',
-    'T2M': 'Temperatura a 2 metros',
-    'T2MWET': 'Temperatura media a 2 metros',
-    'T2M_MAX': 'Temperatura máxima a 2 metros',
-    'TS': 'Temperatura superficial',
-    'WS10M': 'Velocidad del viento a 10 metros'}
+        'PRECTOTCORR': 'Precipitación total corregida',
+        'PS': 'Presión en superficie',
+        'RH2M': 'Humedad relativa',
+        'T2M': 'Temperatura a 2 metros',
+        'T2MWET': 'Temperatura media a 2 metros',
+        'T2M_MAX': 'Temperatura máxima a 2 metros',
+        'TS': 'Temperatura superficial',
+        'WS10M': 'Velocidad del viento a 10 metros'
+    }
 
     # Variables climáticas candidatas (siglas)
     climate_vars = list(climate_variable_names.keys())  # Las siglas de las variables climáticas
@@ -397,10 +488,12 @@ def main() -> None:
         options=[climate_variable_names[var] for var in climate_vars],  # Mostrar nombres completos
         default=[]
     )
-    
+
     # Convertir las selecciones del usuario de vuelta a las siglas
-    selected_vars_time_siglas = [var for var in climate_vars if climate_variable_names[var] in selected_vars_time]
-    
+    selected_vars_time_siglas = [
+        var for var in climate_vars if climate_variable_names[var] in selected_vars_time
+    ]
+
     # Top N de avistamientos (fuera del filtro de especie)
     st.sidebar.markdown("---")
     max_n = min(10, species_mapping.shape[0])  # limite de especies a mostrar
@@ -415,7 +508,6 @@ def main() -> None:
         'Especie 2': Path('model_especie2.pkl'),
         'Especie 3': Path('model_especie3.pkl')
     }
-    
     models = load_models(model_paths)
     # Modelo logístico general para presencia/ausencia
     logistic_model_path = Path('model_logistic.pkl')
@@ -423,30 +515,23 @@ def main() -> None:
 
     # Contenido principal
     st.subheader(f"Especie seleccionada: {selected_common_name}")
-        
-    # Resultados del modelo logístico para la especie seleccionada
-    st.markdown("### Modelo logístico general (importancia de variables y métricas)")
-    
-    if logistic_model is not None:
-        # Determinar las variables que utiliza el modelo
-        logistic_feature_names: List[str]
-        try:
-            if hasattr(logistic_model, 'feature_names_in_'):
-                logistic_feature_names = [
-                    f for f in logistic_model.feature_names_in_ if f in df.columns
-                ]
-            else:
-                num_feats = len(logistic_model.coef_.ravel())
-                logistic_feature_names = available_vars[:num_feats]
-        except Exception:
-            logistic_feature_names = available_vars
-    
-        # Importancia de variables (coeficientes) usando las variables del modelo
-        # Mostrar la importancia de las variables para el modelo general
-        plot_variable_importance(logistic_model, logistic_feature_names, key="general_importance")
-        
 
-    
+    # Sección de modelos predictivos: muestra las imágenes y descripciones definidas arriba.
+    st.markdown("### Modelos predictivos")
+    for img_file, desc in zip(MODEL_IMAGE_FILES, MODEL_IMAGE_DESCRIPTIONS):
+        # Utilizar columnas para poner cada imagen con su tarjeta informativa
+        col_img, col_info = st.columns([3, 2])
+        with col_img:
+            if Path(img_file).exists():
+                st.image(img_file, use_column_width=True)
+            else:
+                st.warning(
+                    f"No se encontró la imagen '{img_file}'. "
+                    "Asegúrate de colocar el archivo en la misma carpeta del script o actualiza la ruta en MODEL_IMAGE_FILES."
+                )
+        with col_info:
+            st.info(desc)
+
     st.info("""
     **Instrucciones para leer el gráfico:**
     - El gráfico muestra la **serie de tiempo** de la variable climática seleccionada.
@@ -469,7 +554,7 @@ def main() -> None:
             df['PRESENCIA'] = (df['AVISTAMIENTOS'] > 0).astype(int)
         else:
             st.warning("No se encuentra la columna AVISTAMIENTOS para construir la variable objetivo.")
-            return
+            # salimos del expander
         # Métricas y curvas para cada modelo cargado
         for key, model in models.items():
             st.markdown(f"### {key}")
@@ -477,11 +562,14 @@ def main() -> None:
                 st.info("Modelo no disponible.")
                 continue
             # Filtrar datos para la especie del modelo
-            species_name = key
+            species_name_model = key
             # Se busca la fila correspondiente en species_mapping
             try:
                 common_name_model = species_mapping.loc[
-                    species_mapping['COMMON NAME'].str.contains(species_name.split()[-1], case=False), 'COMMON NAME'
+                    species_mapping['COMMON NAME'].str.contains(
+                        species_name_model.split()[-1], case=False
+                    ),
+                    'COMMON NAME'
                 ].iloc[0]
             except Exception:
                 # Si no se encuentra coincidencia, se usan todos los datos
@@ -490,7 +578,8 @@ def main() -> None:
                 df_model = filter_by_species(df, common_name_model)
             else:
                 df_model = df
-            
+            # Aquí se podrían agregar métricas o visualizaciones específicas si fuera necesario
+
     st.markdown("---")
     st.caption("Aplicación desarrollada para visualizar avistamientos y variables climáticas de aves.")
 
