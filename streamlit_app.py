@@ -19,7 +19,7 @@ import streamlit as st
 import base64
 
 # Ruta de tu imagen de fondo (ajusta el nombre y la ubicación según sea necesario)
-fondo_path = "fondo_espol.jpeg"
+fondo_path = "espol_fondo.png"
 
 # Leer y codificar la imagen en base64
 with open(fondo_path, "rb") as file:
