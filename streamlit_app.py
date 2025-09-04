@@ -20,6 +20,35 @@ from PIL import Image
 # Nombres de los archivos de imágenes que se utilizarán en el dashboard.
 # Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
 
+background_image_path = "fondo_espol.jpg"  # Asegúrate de que esta imagen esté en el mismo directorio
+
+# Estilos CSS para crear el fondo con la capa de color morado
+background_css = f"""
+    <style>
+        .main {{
+            background-image: url('{background_image_path}');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            min-height: 100vh;
+        }}
+        
+        .main::before {{
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(128, 0, 128, 0.6);  /* Morado atenuado */
+            z-index: -1;  /* Asegura que la capa de color esté por debajo del contenido */
+        }}
+    </style>
+"""
+
+# Incluir el estilo en el archivo Streamlit
+st.markdown(background_css, unsafe_allow_html=True)
+
 # Ruta de la imagen del banner
 banner_image_path = "lago.jpeg"  # Asegúrate de que esta imagen esté en el directorio correcto
 
