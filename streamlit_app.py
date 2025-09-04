@@ -21,7 +21,7 @@ from PIL import Image
 # Asegúrate de colocar estas imágenes en el mismo directorio que este archivo o actualiza las rutas.
 
 # Ruta de la imagen del banner
-banner_image_path = "banner_image.jpg"  # Asegúrate de que esta imagen esté en el mismo directorio
+banner_image_path = "espol-ecuador.jpg"  # Asegúrate de que esta imagen esté en el mismo directorio
 
 # Cargar la imagen
 BANNER_IMAGE= Image.open(banner_image_path)
